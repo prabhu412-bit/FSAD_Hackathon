@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Airline Customer Feedback and Complaint Resolution System</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<div class="bg-orb orb-1"></div>
+<div class="bg-orb orb-2"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">
+      <i class="fa-solid fa-plane"></i>
+    </div>
+    <div>
+      <div class="brand-title">Airline Customer Feedback</div>
+      <div class="brand-subtitle">Customer feedback + instant triage + resolution</div>
+    </div>
+  </div>
+
+  <div class="topbar-actions">
+    <a class="pill-link" href="/api-docs" target="_blank" rel="noopener">
+      <i class="fa-solid fa-code"></i>
+      API Docs
+    </a>
+    <button class="pill-btn" id="btnTheme" type="button" title="Toggle theme">
+      <i class="fa-solid fa-moon"></i>
+      Theme
+    </button>
+  </div>
+</header>
+
+<main class="container">
+  <section class="panel hero">
+    <div class="hero-left">
+      <h1>Resolve cases faster with smart triage.</h1>
+      <p>
+        Submit feedback or a complaint, get automatic categorization + priority, and track progress through a clean resolution timeline.
+        Built for hackathon demos.
+      </p>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-kpi" id="kpiTotal">-</div>
+          <div class="stat-label">Recent Cases</div>
+        </div>
+        <div class="stat">
+          <div class="stat-kpi" id="kpiHot">-</div>
+          <div class="stat-label">High Priority</div>
+        </div>
+        <div class="stat">
+          <div class="stat-kpi" id="kpiResolved">-</div>
+          <div class="stat-label">Resolved</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="glass card-timeline">
+        <div class="card-title">
+          <i class="fa-solid fa-road"></i>
+          Status Timeline
+        </div>
+        <div class="timeline" id="timelinePreview"></div>
+        <div class="muted">
+          Priority is auto-calculated from your message (keywords + sentiment).
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel nav-panel">
+    <nav class="tabs" role="tablist" aria-label="Case actions">
+      <button class="tab active" data-tab="feedbackTab" type="button" role="tab" aria-selected="true">
+        <i class="fa-solid fa-pen-nib"></i>
+        Feedback
+      </button>
+      <button class="tab" data-tab="complaintTab" type="button" role="tab" aria-selected="false">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Complaint
+      </button>
+      <button class="tab" data-tab="trackTab" type="button" role="tab" aria-selected="false">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        Track Case
+      </button>
+      <button class="tab" data-tab="adminTab" type="button" role="tab" aria-selected="false">
+        <i class="fa-solid fa-user-shield"></i>
+        Admin Resolve
+      </button>
+      <button class="tab" data-tab="analyticsTab" type="button" role="tab" aria-selected="false">
+        <i class="fa-solid fa-chart-line"></i>
+        Analytics
+      </button>
+    </nav>
+  </section>
+
+  <section class="panel">
+    <div id="feedbackTab" class="tab-panel">
+      <form id="feedbackForm" class="form-grid">
+        <h2><i class="fa-solid fa-bolt"></i> Submit Feedback</h2>
+        <div class="row">
+          <label>Full name</label>
+          <input name="customerName" type="text" placeholder="e.g., Priya Nair" required />
+        </div>
+        <div class="row">
+          <label>Email</label>
+          <input name="customerEmail" type="email" placeholder="e.g., priya@example.com" required />
+        </div>
+        <div class="row">
+          <label>Flight number</label>
+          <input name="flightNumber" type="text" placeholder="e.g., EK200" required />
+        </div>
+        <div class="row">
+          <label>Journey date</label>
+          <input name="journeyDate" type="date" required />
+        </div>
+        <div class="row">
+          <label>Channel</label>
+          <select name="contactChannel" required>
+            <option value="web" selected>Web</option>
+            <option value="app">App</option>
+            <option value="kiosk">Kiosk</option>
+            <option value="call-center">Call center</option>
+          </select>
+        </div>
+        <div class="row span-2">
+          <label>Message</label>
+          <textarea name="message" rows="4" placeholder="Tell us what went great (or what we can improve)..." required></textarea>
+        </div>
+        <div class="triagePreview span-2" id="feedbackTriagePreview">
+          <div class="meta"><strong>Auto-triage preview</strong>: start typing your message.</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" type="submit">
+            <i class="fa-solid fa-paper-plane"></i>
+            Submit
+          </button>
+          <button class="btn" id="resetFeedback" type="button">
+            <i class="fa-solid fa-rotate-left"></i>
+            Reset
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div id="complaintTab" class="tab-panel hidden">
+      <form id="complaintForm" class="form-grid">
+        <h2><i class="fa-solid fa-skull-crossbones"></i> File a Complaint</h2>
+        <div class="row">
+          <label>Full name</label>
+          <input name="customerName" type="text" placeholder="e.g., John Smith" required />
+        </div>
+        <div class="row">
+          <label>Email</label>
+          <input name="customerEmail" type="email" placeholder="e.g., john@example.com" required />
+        </div>
+        <div class="row">
+          <label>Flight number</label>
+          <input name="flightNumber" type="text" placeholder="e.g., AA123" required />
+        </div>
+        <div class="row">
+          <label>Journey date</label>
+          <input name="journeyDate" type="date" required />
+        </div>
+        <div class="row">
+          <label>Channel</label>
+          <select name="contactChannel" required>
+            <option value="web">Web</option>
+            <option value="app" selected>App</option>
+            <option value="kiosk">Kiosk</option>
+            <option value="call-center">Call center</option>
+          </select>
+        </div>
+        <div class="row span-2">
+          <label>Message</label>
+          <textarea name="message" rows="4" placeholder="Describe the issue. Mention delays, baggage, refunds, or staff behavior..." required></textarea>
+        </div>
+        <div class="triagePreview span-2" id="complaintTriagePreview">
+          <div class="meta"><strong>Auto-triage preview</strong>: start typing your message.</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-danger" type="submit">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Submit Complaint
+          </button>
+          <button class="btn" id="resetComplaint" type="button">
+            <i class="fa-solid fa-rotate-left"></i>
+            Reset
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div id="trackTab" class="tab-panel hidden">
+      <div class="split">
+        <div>
+          <h2><i class="fa-solid fa-location-dot"></i> Track Your Case</h2>
+          <div class="card">
+            <div class="radio-row">
+              <label class="radio">
+                <input type="radio" name="trackMode" value="ticket" checked />
+                Ticket number
+              </label>
+              <label class="radio">
+                <input type="radio" name="trackMode" value="email" />
+                Email
+              </label>
+            </div>
+
+            <div id="trackTicketArea">
+              <label>Ticket number</label>
+              <input id="trackTicketNumber" type="text" placeholder="e.g., AIR-20260325-00001" />
+              <button class="btn btn-primary" id="btnLookup" type="button">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                Lookup
+              </button>
+            </div>
+
+            <div id="trackEmailArea" class="hidden">
+              <label>Email</label>
+              <input id="trackEmail" type="email" placeholder="e.g., john@example.com" />
+              <div class="inline">
+                <div>
+                  <label>Limit</label>
+                  <input id="trackLimit" type="number" min="1" max="25" value="10" />
+                </div>
+                <div class="align-end">
+                  <button class="btn btn-primary" id="btnLookupEmail" type="button">
+                    <i class="fa-solid fa-list"></i>
+                    Load cases
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="muted">
+            Tip: demo data is auto-loaded. Try <code>john@example.com</code> or any ticket number from the cards below.
+          </div>
+        </div>
+        <div>
+          <h2><i class="fa-solid fa-diagram-project"></i> Case Results</h2>
+          <div id="caseResults" class="results"></div>
+          <div class="row spread" style="margin-top: 12px;">
+            <button class="btn" id="btnExportCsv" type="button" disabled>
+              <i class="fa-solid fa-file-csv"></i>
+              Export CSV
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="adminTab" class="tab-panel hidden">
+      <form id="adminForm" class="form-grid">
+        <h2><i class="fa-solid fa-gear"></i> Admin: Update Status & Resolution</h2>
+        <div class="row">
+          <label>Ticket number</label>
+          <input name="ticketNumber" type="text" placeholder="AIR-YYYYMMDD-00001" required />
+        </div>
+        <div class="row">
+          <label>Assigned agent (optional)</label>
+          <input name="assignedAgent" type="text" placeholder="e.g., Agent Omar" />
+        </div>
+        <div class="row">
+          <label>New status</label>
+          <select name="status" required>
+            <option value="TRIAGED">TRIAGED</option>
+            <option value="IN_PROGRESS">IN_PROGRESS</option>
+            <option value="RESOLVED" selected>RESOLVED</option>
+          </select>
+        </div>
+        <div class="row span-2">
+          <label>Resolution note (required for RESOLVED)</label>
+          <textarea name="resolutionText" rows="4" placeholder="Write what we did and what the customer should expect..." ></textarea>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" type="submit">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            Apply Update
+          </button>
+        </div>
+      </form>
+      <div class="muted" style="margin-top: 14px;">
+        Demo-friendly: no authentication. In a real system, you would secure these endpoints.
+      </div>
+      <div class="results" id="adminPreview" style="margin-top: 14px;"></div>
+    </div>
+
+    <div id="analyticsTab" class="tab-panel hidden">
+      <h2 style="margin:0 0 10px 0;"><i class="fa-solid fa-chart-pie"></i> Submissions Analytics</h2>
+      <div class="analytics-grid">
+        <div class="stat">
+          <div class="stat-kpi" id="analyticsTotal">-</div>
+          <div class="stat-label">Total Submissions</div>
+        </div>
+        <div class="stat">
+          <div class="stat-kpi" id="analyticsFeedback">-</div>
+          <div class="stat-label">Feedback</div>
+        </div>
+        <div class="stat">
+          <div class="stat-kpi" id="analyticsComplaints">-</div>
+          <div class="stat-label">Complaints</div>
+        </div>
+        <div class="stat">
+          <div class="stat-kpi" id="analyticsResolved">-</div>
+          <div class="stat-label">Resolved</div>
+        </div>
+        <div class="stat">
+          <div class="stat-kpi" id="analyticsOpen">-</div>
+          <div class="stat-label">Open</div>
+        </div>
+        <div class="stat">
+          <div class="stat-kpi" id="analyticsHigh">-</div>
+          <div class="stat-label">High Priority</div>
+        </div>
+        <div class="stat span-2">
+          <div class="stat-kpi" id="analyticsLast7">-</div>
+          <div class="stat-label">Submissions in Last 7 Days</div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:14px; padding:14px;">
+        <div class="meta" style="margin-bottom:10px;"><strong>Recent submissions</strong> (latest first)</div>
+        <div class="analytics-two-col">
+          <div>
+            <div class="meta" style="margin:2px 0 10px 0;"><strong>Complaints</strong></div>
+            <div class="table-wrap">
+              <table class="glass-table" role="table" aria-label="Complaints submissions">
+                <thead>
+                  <tr>
+                    <th>Ticket</th>
+                    <th>Status</th>
+                    <th>Customer</th>
+                    <th>Message</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody id="analyticsComplaintsBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <div class="meta" style="margin:2px 0 10px 0;"><strong>Feedback</strong></div>
+            <div class="table-wrap">
+              <table class="glass-table" role="table" aria-label="Feedback submissions">
+                <thead>
+                  <tr>
+                    <th>Ticket</th>
+                    <th>Status</th>
+                    <th>Customer</th>
+                    <th>Message</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody id="analyticsFeedbackBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="row spread" style="margin-top:12px;">
+          <button class="btn" id="btnRefreshAnalytics" type="button">
+            <i class="fa-solid fa-rotate-right"></i>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:14px; padding:14px;">
+        <div class="meta" style="margin-bottom:10px;"><strong>Complaints (full text, newest first)</strong></div>
+        <div id="analyticsComplaintsFullList" class="complaints-feed"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+  <footer class="footer">
+    <span>Built for the hackathon demo: airline feedback + complaint triage + resolution tracking.</span>
+  </footer>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>
+
