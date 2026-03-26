@@ -16,7 +16,7 @@ mvn spring-boot:run
 
 Open:
 - UI: http://localhost:8080
-- API docs (Swagger UI): http://localhost:8080/api-docs
+- Customer submit page (friend mode): http://localhost:8080/customer
 
 ## Demo data
 
