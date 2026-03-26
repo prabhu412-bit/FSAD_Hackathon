@@ -15,8 +15,8 @@ mvn spring-boot:run
 ```
 
 Open:
-- UI: http://localhost:8080
-- Customer submit page (friend mode): http://localhost:8080/customer
+- Dashboard: http://localhost:8080
+- Customer Portal: http://localhost:8080/customer
 
 ## Demo data
 
@@ -28,13 +28,3 @@ Try tracking:
 - Email: `sara@example.com`
 
 You can also use any ticket number displayed in the UI cards.
-
-## API (quick)
-
-- `POST /api/feedback`
-- `POST /api/complaints`
-- `GET  /api/cases/lookup?ticketNumber=...`
-- `GET  /api/cases/my?email=...&limit=10`
-- `PATCH /api/cases/{id}/status`
-- `POST /api/cases/{id}/resolution`
-
