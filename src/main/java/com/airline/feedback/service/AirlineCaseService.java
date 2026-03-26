@@ -104,5 +104,12 @@ public class AirlineCaseService {
     }
     return repository.save(c);
   }
+
+  @Transactional
+  public void deleteCase(String id) {
+    AirlineCase c = repository.findById(id)
+        .orElseThrow(() -> new NoSuchElementException("Case not found"));
+    repository.delete(c);
+  }
 }
 

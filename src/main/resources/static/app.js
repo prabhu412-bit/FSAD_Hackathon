@@ -209,6 +209,13 @@ function setTab(tabId) {
     panel.classList.add("hidden");
     if (panel.id === tabId) panel.classList.remove("hidden");
   });
+
+  // Remember last active tab so refresh keeps the same screen.
+  try {
+    localStorage.setItem("airline-active-tab", tabId);
+  } catch {
+    // ignore
+  }
 }
 
 function connectTabs() {
@@ -278,6 +285,12 @@ async function loadAnalytics(force = false) {
             <div class="meta">${escapeHtml(formatDateTime(c.createdAt))}</div>
           </div>
           <div class="msg">${escapeHtml(c.message || "")}</div>
+          <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+            <button class="btn btn-danger btn-mini" type="button" data-delete-id="${escapeHtml(c.id)}">
+              <i class="fa-solid fa-trash"></i>
+              Delete
+            </button>
+          </div>
         `;
         complaintsFullList.appendChild(item);
       }
@@ -300,6 +313,12 @@ async function loadAnalytics(force = false) {
             <div class="meta">${escapeHtml(formatDateTime(c.createdAt))}</div>
           </div>
           <div class="msg">${escapeHtml(c.message || "")}</div>
+          <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+            <button class="btn btn-danger btn-mini" type="button" data-delete-id="${escapeHtml(c.id)}">
+              <i class="fa-solid fa-trash"></i>
+              Delete
+            </button>
+          </div>
         `;
         feedbackFullList.appendChild(item);
       }
@@ -557,16 +576,22 @@ async function loadKpis() {
 function connectResetButtons() {
   const resetFeedback = qs("#resetFeedback");
   const resetComplaint = qs("#resetComplaint");
-  resetFeedback.addEventListener("click", () => {
-    qs("#feedbackForm").reset();
-    const p = qs("#feedbackTriagePreview");
-    if (p) p.innerHTML = `<div class="meta"><strong>Auto-triage preview</strong>: start typing your message.</div>`;
-  });
-  resetComplaint.addEventListener("click", () => {
-    qs("#complaintForm").reset();
-    const p = qs("#complaintTriagePreview");
-    if (p) p.innerHTML = `<div class="meta"><strong>Auto-triage preview</strong>: start typing your message.</div>`;
-  });
+  if (resetFeedback) {
+    resetFeedback.addEventListener("click", () => {
+      const form = qs("#feedbackForm");
+      if (form) form.reset();
+      const p = qs("#feedbackTriagePreview");
+      if (p) p.innerHTML = `<div class="meta"><strong>Auto-triage preview</strong>: start typing your message.</div>`;
+    });
+  }
+  if (resetComplaint) {
+    resetComplaint.addEventListener("click", () => {
+      const form = qs("#complaintForm");
+      if (form) form.reset();
+      const p = qs("#complaintTriagePreview");
+      if (p) p.innerHTML = `<div class="meta"><strong>Auto-triage preview</strong>: start typing your message.</div>`;
+    });
+  }
 }
 
 function debounce(fn, waitMs) {
@@ -660,16 +685,35 @@ function init() {
     refreshBtn.addEventListener("click", () => loadAnalytics(true));
   }
 
-  qs("#feedbackForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    await handleCreateCase(e.currentTarget, "/feedback");
-  });
-  qs("#complaintForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    await handleCreateCase(e.currentTarget, "/complaints");
-  });
+  // Optional forms (only exist on /customer page).
+  const feedbackForm = qs("#feedbackForm");
+  if (feedbackForm) {
+    feedbackForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      await handleCreateCase(e.currentTarget, "/feedback");
+    });
+  }
+  const complaintForm = qs("#complaintForm");
+  if (complaintForm) {
+    complaintForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      await handleCreateCase(e.currentTarget, "/complaints");
+    });
+  }
 
   renderTimeline(qs("#timelinePreview"), "SUBMITTED");
+
+  // Default active tab on refresh (important after removing feedback/complaint panels).
+  try {
+    const validTabIds = new Set(qsa(".tab").map(b => b.dataset.tab));
+    const storedTab = localStorage.getItem("airline-active-tab");
+    const initialTab = (storedTab && validTabIds.has(storedTab)) ? storedTab : "trackTab";
+    setTab(initialTab);
+    if (initialTab === "analyticsTab") loadAnalytics(true);
+  } catch {
+    setTab("trackTab");
+  }
+
   loadKpis();
 
   // Keep dashboard fresh while someone submits from the customer page.
@@ -683,6 +727,28 @@ function init() {
       loadAnalytics(true);
     }
   }, 15000);
+
+  // Delete actions (Analytics only). Uses event delegation so it works after re-render.
+  document.addEventListener("click", async (e) => {
+    const btn = e.target && e.target.closest ? e.target.closest("[data-delete-id]") : null;
+    if (!btn) return;
+
+    const id = btn.dataset.deleteId;
+    if (!id) return;
+
+    const ok = confirm("Delete this case? This cannot be undone (demo mode).");
+    if (!ok) return;
+
+    try {
+      await fetch(`${API_BASE}/cases/${encodeURIComponent(id)}`, { method: "DELETE" });
+      toast("Deleted", "Case removed.", "success");
+      analyticsLoadedOnce = false;
+      loadAnalytics(true);
+      loadKpis();
+    } catch (err) {
+      toast("Delete failed", (err && err.message) ? err.message : String(err), "error");
+    }
+  });
 }
 
 init();

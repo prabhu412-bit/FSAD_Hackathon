@@ -109,6 +109,12 @@ public class AirlineCaseController {
     return ResponseEntity.ok(AirlineCaseResponse.from(updated));
   }
 
+  @DeleteMapping("/cases/{id}")
+  public ResponseEntity<Void> deleteCase(@PathVariable("id") String id) {
+    service.deleteCase(id);
+    return ResponseEntity.noContent().build();
+  }
+
   @ExceptionHandler(NoSuchElementException.class)
   public ResponseEntity<?> notFound(NoSuchElementException ex) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorBody(ex.getMessage()));

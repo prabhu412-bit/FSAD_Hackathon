@@ -21,16 +21,14 @@
   </div>
 
   <div class="topbar-actions">
-    <a class="pill-link" href="/" rel="noopener">
-      <i class="fa-solid fa-shield-halved"></i>
-      Dashboard
-    </a>
     <button class="pill-btn" id="btnTheme" type="button" title="Toggle theme">
       <i class="fa-solid fa-moon"></i>
       Theme
     </button>
   </div>
 </header>
+
+<div class="bg-airport" aria-hidden="true"></div>
 
 <main class="container">
   <section class="panel nav-panel" style="padding:12px 14px;">
@@ -42,6 +40,10 @@
       <button class="tab" data-tab="complaintTab" type="button" role="tab" aria-selected="false">
         <i class="fa-solid fa-triangle-exclamation"></i>
         Complaint
+      </button>
+      <button class="tab" data-tab="trackTab" type="button" role="tab" aria-selected="false">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        Track Case
       </button>
     </nav>
   </section>
@@ -141,6 +143,61 @@
           </button>
         </div>
       </form>
+    </div>
+
+    <div id="trackTab" class="tab-panel hidden">
+      <div class="split">
+        <div>
+          <h2><i class="fa-solid fa-location-dot"></i> Track Your Case</h2>
+          <div class="card">
+            <div class="radio-row">
+              <label class="radio">
+                <input type="radio" name="trackMode" value="ticket" checked />
+                Ticket number
+              </label>
+              <label class="radio">
+                <input type="radio" name="trackMode" value="email" />
+                Email
+              </label>
+            </div>
+
+            <div id="trackTicketArea">
+              <label>Ticket number</label>
+              <input id="trackTicketNumber" type="text" placeholder="e.g., AIR-20260325-00001" />
+              <button class="btn btn-primary" id="btnLookup" type="button">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                Lookup
+              </button>
+            </div>
+
+            <div id="trackEmailArea" class="hidden">
+              <label>Email</label>
+              <input id="trackEmail" type="email" placeholder="e.g., john@example.com" />
+              <div class="inline">
+                <div>
+                  <label>Limit</label>
+                  <input id="trackLimit" type="number" min="1" max="25" value="10" />
+                </div>
+                <div class="align-end">
+                  <button class="btn btn-primary" id="btnLookupEmail" type="button">
+                    <i class="fa-solid fa-list"></i>
+                    Load cases
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="muted">
+            Tip: try ticket number or email you received.
+          </div>
+        </div>
+
+        <div>
+          <h2><i class="fa-solid fa-diagram-project"></i> Case Results</h2>
+          <div id="caseResults" class="results"></div>
+        </div>
+      </div>
     </div>
   </section>
 

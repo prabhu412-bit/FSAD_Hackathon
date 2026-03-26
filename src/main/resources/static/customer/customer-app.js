@@ -125,6 +125,195 @@ function connectTabs() {
   });
 }
 
+function statusOrder() {
+  return ["SUBMITTED", "TRIAGED", "IN_PROGRESS", "RESOLVED"];
+}
+
+function renderTimeline(container, status) {
+  if (!container) return;
+  const order = statusOrder();
+  const activeIdx = Math.max(0, order.indexOf(status));
+  container.innerHTML = "";
+
+  const steps = [
+    { key: "SUBMITTED", name: "Submitted", sub: "Case created + auto triage" },
+    { key: "TRIAGED", name: "Triaged", sub: "Category + priority set" },
+    { key: "IN_PROGRESS", name: "In Progress", sub: "Agent working on it" },
+    { key: "RESOLVED", name: "Resolved", sub: "Resolution shared" }
+  ];
+
+  for (let i = 0; i < steps.length; i++) {
+    const s = steps[i];
+    const cls = i < activeIdx ? "done" : i === activeIdx ? "active" : "";
+    const node = document.createElement("div");
+    node.className = "timeline-step " + cls;
+    node.innerHTML = `
+      <div class="timeline-dot"></div>
+      <div>
+        <div class="tname">${escapeHtml(s.name)}</div>
+        <div class="tsub">${escapeHtml(s.sub)}</div>
+      </div>
+    `;
+    container.appendChild(node);
+  }
+}
+
+function badgeForPriority(priority) {
+  const p = Number(priority || 1);
+  if (p >= 5) return { cls: "bad", label: "Urgent" };
+  if (p >= 4) return { cls: "bad", label: "High" };
+  if (p >= 3) return { cls: "warn", label: "Medium" };
+  return { cls: "good", label: "Low" };
+}
+
+function slaDeadlineHours(type) {
+  return type === "COMPLAINT" ? 48 : 24;
+}
+
+function hoursBetween(iso) {
+  const t = new Date(iso).getTime();
+  const now = Date.now();
+  return Math.max(0, (now - t) / 36e5);
+}
+
+function renderCaseCard(c) {
+  const badge = badgeForPriority(c.priority);
+  const statusBadge = `
+    <span class="badge">
+      <span class="dot"></span>${escapeHtml(c.status || "")}
+    </span>
+  `;
+
+  const resolved = c.status === "RESOLVED";
+  const body = resolved
+    ? `<div class="resolution">
+         <div class="m-title"><i class="fa-solid fa-circle-check"></i> Resolution</div>
+         <div class="res-body">${escapeHtml(c.resolutionText || "Resolution provided.")}</div>
+       </div>`
+    : `<div class="resolution" style="border-color: rgba(96,165,250,.22); background: rgba(96,165,250,.07);">
+         <div class="m-title" style="color: rgba(96,165,250,.95);"><i class="fa-solid fa-hourglass-half"></i> Next Update</div>
+         <div class="res-body">${escapeHtml(c.triageSuggestion || "We’re working on this case.")}</div>
+       </div>`;
+
+  const ageH = c.createdAt ? hoursBetween(c.createdAt) : 0;
+  const slaH = slaDeadlineHours(c.type);
+  const progress = resolved ? 100 : Math.round(Math.min(100, (ageH / slaH) * 100));
+  const overdue = !resolved && ageH > slaH;
+
+  const slaHtml = `
+    <div class="meta" style="display:flex; gap:12px; align-items:center; margin-top: 10px;">
+      <span><strong>SLA</strong>: ${c.type === "COMPLAINT" ? "48h" : "24h"}</span>
+      <span><strong>Age</strong>: ${ageH.toFixed(1)}h</span>
+      <span style="margin-left:auto; color:${overdue ? "rgba(251,113,133,.98)" : "var(--muted)"};">
+        ${overdue ? "<strong>Overdue</strong>" : `Progress: ${progress}%`}
+      </span>
+    </div>
+  `;
+
+  const node = document.createElement("div");
+  node.className = "case-card";
+  node.innerHTML = `
+    <div class="top">
+      <div>
+        <div class="ticket">${escapeHtml(c.ticketNumber || "")}</div>
+        <div class="meta">
+          <strong>${escapeHtml(c.type === "COMPLAINT" ? "Complaint" : "Feedback")}</strong>
+          • ${escapeHtml(c.category || "")}
+        </div>
+        ${slaHtml}
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-end;">
+        ${statusBadge}
+        <span class="badge ${badge.cls}">
+          <span class="dot"></span>${escapeHtml(badge.label)} Priority (${c.priority}/5)
+        </span>
+      </div>
+    </div>
+
+    <div class="case-grid">
+      <div>
+        <div class="meta"><strong>Customer</strong>: ${escapeHtml(c.customerEmail || "")}</div>
+        <div class="meta" style="margin-top:8px;"><strong>Flight</strong>: ${escapeHtml(c.flightNumber || "-")} • ${escapeHtml(c.journeyDate || "-")}</div>
+      </div>
+      <div class="mini-timeline">
+        <div class="meta" style="margin-bottom: 6px;"><strong>Timeline</strong></div>
+        <div class="timeline" id="timeline-${escapeHtml(c.id)}"></div>
+      </div>
+    </div>
+
+    <div class="message">
+      <div class="m-title"><i class="fa-solid fa-message"></i> Message</div>
+      <div>${escapeHtml(c.message || "")}</div>
+    </div>
+    ${body}
+  `;
+
+  setTimeout(() => renderTimeline(node.querySelector(`#timeline-${c.id}`), c.status), 0);
+  return node;
+}
+
+async function lookupByTicket(ticketNumber) {
+  const res = await fetch(`${API_BASE}/cases/lookup?ticketNumber=${encodeURIComponent(ticketNumber)}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Lookup failed");
+  return data;
+}
+
+async function lookupByEmail(email, limit) {
+  const res = await fetch(`${API_BASE}/cases/my?email=${encodeURIComponent(email)}&limit=${encodeURIComponent(limit)}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Lookup failed");
+  return data;
+}
+
+function connectTrack() {
+  const ticketArea = qs("#trackTicketArea");
+  const emailArea = qs("#trackEmailArea");
+
+  qsa("input[name='trackMode']").forEach(r => {
+    r.addEventListener("change", () => {
+      const mode = qsa("input[name='trackMode']").find(x => x.checked).value;
+      ticketArea && ticketArea.classList.toggle("hidden", mode !== "ticket");
+      emailArea && emailArea.classList.toggle("hidden", mode !== "email");
+    });
+  });
+
+  qs("#btnLookup")?.addEventListener("click", async () => {
+    const ticketNumber = qs("#trackTicketNumber").value.trim();
+    if (!ticketNumber) return toast("Missing ticket", "Enter a ticket number.", "error");
+    try {
+      toast("Loading case...", ticketNumber);
+      const c = await lookupByTicket(ticketNumber);
+      renderCaseResults([c]);
+    } catch (e) {
+      toast("Lookup failed", e.message || String(e), "error");
+    }
+  });
+
+  qs("#btnLookupEmail")?.addEventListener("click", async () => {
+    const email = qs("#trackEmail").value.trim();
+    const limit = Number(qs("#trackLimit").value || 10);
+    if (!email) return toast("Missing email", "Enter an email.", "error");
+    try {
+      const cases = await lookupByEmail(email, limit);
+      renderCaseResults(cases || []);
+    } catch (e) {
+      toast("Lookup failed", e.message || String(e), "error");
+    }
+  });
+}
+
+function renderCaseResults(cases) {
+  const out = qs("#caseResults");
+  if (!out) return;
+  out.innerHTML = "";
+  if (!cases || cases.length === 0) {
+    out.innerHTML = `<div class="case-card"><div class="meta"><strong>No cases found.</strong></div></div>`;
+    return;
+  }
+  for (const c of cases) out.appendChild(renderCaseCard(c));
+}
+
 function connectResetButtons() {
   const resetFeedback = qs("#resetFeedback");
   const resetComplaint = qs("#resetComplaint");
@@ -205,6 +394,7 @@ function init() {
   connectThemeToggle();
   connectResetButtons();
   connectDefaultDates();
+  connectTrack();
   connectTriagePreview("#feedbackForm", "#feedbackTriagePreview");
   connectTriagePreview("#complaintForm", "#complaintTriagePreview");
 
