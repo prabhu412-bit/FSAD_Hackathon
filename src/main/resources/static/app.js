@@ -216,7 +216,8 @@ function connectTabs() {
     btn.addEventListener("click", () => {
       const tabId = btn.dataset.tab;
       setTab(tabId);
-      if (tabId === "analyticsTab") loadAnalytics();
+      if (tabId === "analyticsTab") loadAnalytics(true);
+      if (tabId === "analyticsTab") loadKpis();
     });
   });
 }
@@ -236,10 +237,9 @@ async function loadAnalytics(force = false) {
   if (analyticsLoadedOnce && !force) return;
 
   const summaryResEl = qs("#analyticsTotal");
-  const complaintsBody = qs("#analyticsComplaintsBody");
-  const feedbackBody = qs("#analyticsFeedbackBody");
   const complaintsFullList = qs("#analyticsComplaintsFullList");
-  if (!summaryResEl || !complaintsBody || !feedbackBody || !complaintsFullList) return;
+  const feedbackFullList = qs("#analyticsFeedbackFullList");
+  if (!summaryResEl || !complaintsFullList || !feedbackFullList) return;
 
   try {
     const sRes = await fetch(`${API_BASE}/analytics/summary`);
@@ -262,33 +262,6 @@ async function loadAnalytics(force = false) {
     const feedback = (recent || []).filter(x => x.type === "FEEDBACK");
     complaints.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
-    const renderRows = (bodyEl, list) => {
-      bodyEl.innerHTML = "";
-      if (!list || list.length === 0) {
-        const row = document.createElement("tr");
-        row.innerHTML = `<td colspan="5" style="padding:14px; color: var(--muted);">No submissions yet.</td>`;
-        bodyEl.appendChild(row);
-        return;
-      }
-
-      for (const c of list) {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td><code>${escapeHtml(c.ticketNumber || "")}</code></td>
-          <td>${escapeHtml(c.status || "")}</td>
-          <td>${escapeHtml(c.customerEmail || "")}</td>
-          <td class="msg-cell">
-            <div class="msg">${escapeHtml(c.message || "")}</div>
-          </td>
-          <td>${escapeHtml(formatDateTime(c.createdAt))}</td>
-        `;
-        bodyEl.appendChild(row);
-      }
-    };
-
-    renderRows(complaintsBody, complaints);
-    renderRows(feedbackBody, feedback);
-
     complaintsFullList.innerHTML = "";
     if (!complaints.length) {
       complaintsFullList.innerHTML = `<div class="complaint-item"><div class="meta">No complaints yet.</div></div>`;
@@ -307,6 +280,28 @@ async function loadAnalytics(force = false) {
           <div class="msg">${escapeHtml(c.message || "")}</div>
         `;
         complaintsFullList.appendChild(item);
+      }
+    }
+
+    const feedbackSorted = [...feedback].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    feedbackFullList.innerHTML = "";
+    if (!feedbackSorted.length) {
+      feedbackFullList.innerHTML = `<div class="complaint-item"><div class="meta">No feedback yet.</div></div>`;
+    } else {
+      for (const c of feedbackSorted) {
+        const item = document.createElement("div");
+        item.className = "complaint-item";
+        item.innerHTML = `
+          <div class="top">
+            <div>
+              <div class="ticket">${escapeHtml(c.ticketNumber || "")}</div>
+              <div class="meta">${escapeHtml(c.customerEmail || "")} • ${escapeHtml(c.status || "")}</div>
+            </div>
+            <div class="meta">${escapeHtml(formatDateTime(c.createdAt))}</div>
+          </div>
+          <div class="msg">${escapeHtml(c.message || "")}</div>
+        `;
+        feedbackFullList.appendChild(item);
       }
     }
 
@@ -332,6 +327,17 @@ async function handleCreateCase(form, endpoint) {
     toast("Case created", `Ticket: ${data.ticketNumber}`, "success");
     renderCaseResults([data], true);
     setTab("trackTab");
+
+    // Ensure Analytics shows updated counts after submission.
+    // We keep a "loaded once" optimization, but must invalidate it after mutations.
+    analyticsLoadedOnce = false;
+    loadKpis();
+
+    // If user happens to be on Analytics tab already, refresh immediately.
+    const analyticsPanel = qs("#analyticsTab");
+    if (analyticsPanel && !analyticsPanel.classList.contains("hidden")) {
+      loadAnalytics(true);
+    }
   } catch (e) {
     toast("Submission failed", e.message || String(e), "error");
   } finally {
@@ -527,23 +533,22 @@ function connectThemeToggle() {
 }
 
 async function loadKpis() {
-  // For demo, sample a few common emails (we seed them).
-  // This keeps frontend “wow” without adding extra backend endpoints.
   try {
-    const demoEmails = ["john@example.com", "priya@example.com", "sara@example.com"];
-    let all = [];
-    for (const email of demoEmails) {
-      const r = await fetch(`${API_BASE}/cases/my?email=${encodeURIComponent(email)}&limit=10`);
-      if (!r.ok) continue;
-      const data = await r.json();
-      all = all.concat(data || []);
-    }
-    all = all.slice(0, 20);
-    qs("#kpiTotal").textContent = all.length;
-    qs("#kpiHot").textContent = all.filter(x => Number(x.priority) >= 4).length;
-    qs("#kpiResolved").textContent = all.filter(x => x.status === "RESOLVED").length;
+    const sRes = await fetch(`${API_BASE}/analytics/summary`);
+    const summary = await sRes.json();
+    if (!sRes.ok) throw new Error(summary.message || "KPI load failed");
 
-    if (all[0]?.status) renderTimeline(qs("#timelinePreview"), all[0].status);
+    qs("#kpiTotal").textContent = summary.totalCases ?? 0;
+    qs("#kpiHot").textContent = summary.highPriorityCount ?? 0;
+    qs("#kpiResolved").textContent = summary.resolvedCount ?? 0;
+
+    const sc = summary.statusCounts || {};
+    const activeStatus =
+      (sc.IN_PROGRESS > 0 ? "IN_PROGRESS" :
+        sc.TRIAGED > 0 ? "TRIAGED" :
+          sc.SUBMITTED > 0 ? "SUBMITTED" :
+            "SUBMITTED");
+    renderTimeline(qs("#timelinePreview"), activeStatus);
   } catch {
     // ignore
   }
@@ -666,6 +671,18 @@ function init() {
 
   renderTimeline(qs("#timelinePreview"), "SUBMITTED");
   loadKpis();
+
+  // Keep dashboard fresh while someone submits from the customer page.
+  setInterval(() => {
+    // KPI refresh
+    loadKpis();
+
+    // Analytics refresh only when visible
+    const analyticsTab = qs("#analyticsTab");
+    if (analyticsTab && !analyticsTab.classList.contains("hidden")) {
+      loadAnalytics(true);
+    }
+  }, 15000);
 }
 
 init();

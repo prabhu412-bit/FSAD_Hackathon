@@ -12,6 +12,7 @@ import com.airline.feedback.model.CaseType;
 import com.airline.feedback.model.AirlineCase;
 import com.airline.feedback.service.AirlineCaseService;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -116,6 +117,15 @@ public class AirlineCaseController {
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<?> badRequest(IllegalArgumentException ex) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorBody(ex.getMessage()));
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<?> validationError(MethodArgumentNotValidException ex) {
+    var fieldError = ex.getBindingResult().getFieldErrors().stream().findFirst().orElse(null);
+    String message = (fieldError != null && fieldError.getDefaultMessage() != null)
+        ? fieldError.getDefaultMessage()
+        : "Validation failed";
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorBody(message));
   }
 
   public static class ErrorBody {

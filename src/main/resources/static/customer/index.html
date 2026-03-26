@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Submissions - Airline Feedback</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">
+      <i class="fa-solid fa-plane"></i>
+    </div>
+    <div>
+      <div class="brand-title">Submit a case</div>
+      <div class="brand-subtitle">Feedback + Complaint (friend mode)</div>
+    </div>
+  </div>
+
+  <div class="topbar-actions">
+    <a class="pill-link" href="/" rel="noopener">
+      <i class="fa-solid fa-shield-halved"></i>
+      Dashboard
+    </a>
+    <button class="pill-btn" id="btnTheme" type="button" title="Toggle theme">
+      <i class="fa-solid fa-moon"></i>
+      Theme
+    </button>
+  </div>
+</header>
+
+<main class="container">
+  <section class="panel nav-panel" style="padding:12px 14px;">
+    <nav class="tabs" role="tablist" aria-label="Customer case actions">
+      <button class="tab active" data-tab="feedbackTab" type="button" role="tab" aria-selected="true">
+        <i class="fa-solid fa-pen-nib"></i>
+        Feedback
+      </button>
+      <button class="tab" data-tab="complaintTab" type="button" role="tab" aria-selected="false">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Complaint
+      </button>
+    </nav>
+  </section>
+
+  <section class="panel">
+    <div id="feedbackTab" class="tab-panel">
+      <form id="feedbackForm" class="form-grid">
+        <h2><i class="fa-solid fa-bolt"></i> Submit Feedback</h2>
+        <div class="row">
+          <label>Full name</label>
+          <input name="customerName" type="text" placeholder="e.g., Priya Nair" required />
+        </div>
+        <div class="row">
+          <label>Email</label>
+          <input name="customerEmail" type="email" placeholder="e.g., priya@example.com" required />
+        </div>
+        <div class="row">
+          <label>Flight number</label>
+          <input name="flightNumber" type="text" placeholder="e.g., EK200" required />
+        </div>
+        <div class="row">
+          <label>Journey date</label>
+          <input name="journeyDate" type="date" required />
+        </div>
+        <div class="row">
+          <label>Channel</label>
+          <select name="contactChannel" required>
+            <option value="web" selected>Web</option>
+            <option value="app">App</option>
+            <option value="kiosk">Kiosk</option>
+            <option value="call-center">Call center</option>
+          </select>
+        </div>
+        <div class="row span-2">
+          <label>Message</label>
+          <textarea name="message" rows="4" placeholder="Tell us what went great (or what we can improve)..." required></textarea>
+        </div>
+        <div class="triagePreview span-2" id="feedbackTriagePreview">
+          <div class="meta"><strong>Auto-triage preview</strong>: start typing your message.</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" type="submit">
+            <i class="fa-solid fa-paper-plane"></i>
+            Submit
+          </button>
+          <button class="btn" id="resetFeedback" type="button">
+            <i class="fa-solid fa-rotate-left"></i>
+            Reset
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div id="complaintTab" class="tab-panel hidden">
+      <form id="complaintForm" class="form-grid">
+        <h2><i class="fa-solid fa-skull-crossbones"></i> File a Complaint</h2>
+        <div class="row">
+          <label>Full name</label>
+          <input name="customerName" type="text" placeholder="e.g., John Smith" required />
+        </div>
+        <div class="row">
+          <label>Email</label>
+          <input name="customerEmail" type="email" placeholder="e.g., john@example.com" required />
+        </div>
+        <div class="row">
+          <label>Flight number</label>
+          <input name="flightNumber" type="text" placeholder="e.g., AA123" required />
+        </div>
+        <div class="row">
+          <label>Journey date</label>
+          <input name="journeyDate" type="date" required />
+        </div>
+        <div class="row">
+          <label>Channel</label>
+          <select name="contactChannel" required>
+            <option value="web">Web</option>
+            <option value="app" selected>App</option>
+            <option value="kiosk">Kiosk</option>
+            <option value="call-center">Call center</option>
+          </select>
+        </div>
+        <div class="row span-2">
+          <label>Message</label>
+          <textarea name="message" rows="4" placeholder="Describe the issue. Mention delays, baggage, refunds, or staff behavior..." required></textarea>
+        </div>
+        <div class="triagePreview span-2" id="complaintTriagePreview">
+          <div class="meta"><strong>Auto-triage preview</strong>: start typing your message.</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-danger" type="submit">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Submit Complaint
+          </button>
+          <button class="btn" id="resetComplaint" type="button">
+            <i class="fa-solid fa-rotate-left"></i>
+            Reset
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <footer class="footer" style="margin-top:18px;">
+    <span>After submission, your admin dashboard can view it under Analytics.</span>
+  </footer>
+</main>
+
+<div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+<script src="/customer/customer-app.js"></script>
+</body>
+</html>
+

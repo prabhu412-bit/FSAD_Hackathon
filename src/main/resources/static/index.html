@@ -24,10 +24,6 @@
   </div>
 
   <div class="topbar-actions">
-    <a class="pill-link" href="/api-docs" target="_blank" rel="noopener">
-      <i class="fa-solid fa-code"></i>
-      API Docs
-    </a>
     <button class="pill-btn" id="btnTheme" type="button" title="Toggle theme">
       <i class="fa-solid fa-moon"></i>
       Theme
@@ -323,56 +319,20 @@
       </div>
 
       <div class="panel" style="margin-top:14px; padding:14px;">
-        <div class="meta" style="margin-bottom:10px;"><strong>Recent submissions</strong> (latest first)</div>
-        <div class="analytics-two-col">
-          <div>
-            <div class="meta" style="margin:2px 0 10px 0;"><strong>Complaints</strong></div>
-            <div class="table-wrap">
-              <table class="glass-table" role="table" aria-label="Complaints submissions">
-                <thead>
-                  <tr>
-                    <th>Ticket</th>
-                    <th>Status</th>
-                    <th>Customer</th>
-                    <th>Message</th>
-                    <th>Created</th>
-                  </tr>
-                </thead>
-                <tbody id="analyticsComplaintsBody"></tbody>
-              </table>
-            </div>
-          </div>
+        <div class="meta" style="margin-bottom:10px;"><strong>Complaints (full text, newest first)</strong></div>
+        <div id="analyticsComplaintsFullList" class="complaints-feed"></div>
 
-          <div>
-            <div class="meta" style="margin:2px 0 10px 0;"><strong>Feedback</strong></div>
-            <div class="table-wrap">
-              <table class="glass-table" role="table" aria-label="Feedback submissions">
-                <thead>
-                  <tr>
-                    <th>Ticket</th>
-                    <th>Status</th>
-                    <th>Customer</th>
-                    <th>Message</th>
-                    <th>Created</th>
-                  </tr>
-                </thead>
-                <tbody id="analyticsFeedbackBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <details class="glass-details" style="margin-top:12px;">
+          <summary class="glass-summary">Show feedback (full text)</summary>
+          <div id="analyticsFeedbackFullList" class="complaints-feed" style="margin-top:10px;"></div>
+        </details>
 
-        <div class="row spread" style="margin-top:12px;">
+        <div class="row spread" style="margin-top:14px;">
           <button class="btn" id="btnRefreshAnalytics" type="button">
             <i class="fa-solid fa-rotate-right"></i>
             Refresh
           </button>
         </div>
-      </div>
-
-      <div class="panel" style="margin-top:14px; padding:14px;">
-        <div class="meta" style="margin-bottom:10px;"><strong>Complaints (full text, newest first)</strong></div>
-        <div id="analyticsComplaintsFullList" class="complaints-feed"></div>
       </div>
     </div>
   </section>

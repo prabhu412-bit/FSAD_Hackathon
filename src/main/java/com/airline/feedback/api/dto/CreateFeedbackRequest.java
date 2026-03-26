@@ -21,7 +21,7 @@ public class CreateFeedbackRequest {
   private String customerEmail;
 
   @NotBlank
-  @Pattern(regexp = "^[A-Za-z0-9\\-]{3,10}$", message = "flightNumber should look like AA123 or A1-234")
+  @Pattern(regexp = "^[A-Za-z0-9\\-]{3,20}$", message = "flightNumber should look like AA123 or A1-234 (3-20 chars)")
   private String flightNumber;
 
   @NotNull

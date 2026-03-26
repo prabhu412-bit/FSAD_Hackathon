@@ -177,11 +177,19 @@ body::after{
   gap: 12px;
 }
 
-.analytics-two-col{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+.glass-details{
+  border:1px solid rgba(255,255,255,.10);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,.02);
 }
+.glass-summary{
+  cursor:pointer;
+  color: var(--text);
+  font-weight: 900;
+  list-style: none;
+}
+.glass-summary::-webkit-details-marker{ display:none; }
 
 .msg-cell{
   max-width: none;
@@ -585,7 +593,6 @@ body.light .toast{background: rgba(255,255,255,.78);}
   .form-grid{grid-template-columns: 1fr;}
   .span-2{grid-column: auto;}
   .case-grid{grid-template-columns: 1fr;}
-  .analytics-two-col{grid-template-columns: 1fr;}
 }
 
 /* Glass-mode: disable neon/cyber visuals */
