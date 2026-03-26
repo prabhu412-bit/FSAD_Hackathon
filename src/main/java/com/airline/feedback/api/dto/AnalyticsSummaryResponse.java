@@ -15,6 +15,12 @@ public class AnalyticsSummaryResponse {
   // status -> count (for quick bar visualization)
   private Map<String, Long> statusCounts;
 
+  // category -> count (Flight Disruption, Baggage/Handling, etc.)
+  private Map<String, Long> categoryCounts;
+
+  // type -> count (FEEDBACK, COMPLAINT)
+  private Map<String, Long> typeCounts;
+
   public long getTotalCases() {
     return totalCases;
   }
@@ -77,6 +83,22 @@ public class AnalyticsSummaryResponse {
 
   public void setStatusCounts(Map<String, Long> statusCounts) {
     this.statusCounts = statusCounts;
+  }
+
+  public Map<String, Long> getCategoryCounts() {
+    return categoryCounts;
+  }
+
+  public void setCategoryCounts(Map<String, Long> categoryCounts) {
+    this.categoryCounts = categoryCounts;
+  }
+
+  public Map<String, Long> getTypeCounts() {
+    return typeCounts;
+  }
+
+  public void setTypeCounts(Map<String, Long> typeCounts) {
+    this.typeCounts = typeCounts;
   }
 }
 

@@ -50,6 +50,20 @@ public class AnalyticsService {
         CaseStatus.RESOLVED.name(), resolved
     ));
 
+    // Category breakdown
+    String[] categories = {"Flight Disruption", "Baggage/Handling", "Billing/Refund", "Service Quality", "General Feedback"};
+    java.util.Map<String, Long> catCounts = new java.util.LinkedHashMap<>();
+    for (String cat : categories) {
+      catCounts.put(cat, repository.countByCategory(cat));
+    }
+    res.setCategoryCounts(catCounts);
+
+    // Type breakdown
+    res.setTypeCounts(Map.of(
+        CaseType.FEEDBACK.name(), feedback,
+        CaseType.COMPLAINT.name(), complaint
+    ));
+
     return res;
   }
 

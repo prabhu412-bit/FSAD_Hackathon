@@ -59,52 +59,6 @@ function badgeForPriority(priority) {
   return { cls: "good", label: "Low" };
 }
 
-function connectTriagePreview(formSelector, previewSelector) {
-  const form = qs(formSelector);
-  const previewEl = qs(previewSelector);
-  if (!form || !previewEl) return;
-
-  const textarea = form.querySelector("textarea[name='message']");
-  if (!textarea) return;
-
-  const run = debounce(async () => {
-    const msg = textarea.value.trim();
-    if (!msg) {
-      previewEl.innerHTML = `<div class="meta"><strong>Auto-triage preview</strong>: start typing your message.</div>`;
-      return;
-    }
-
-    try {
-      previewEl.innerHTML = `<div class="meta"><strong>Auto-triage preview</strong>: analyzing...</div>`;
-      const res = await fetch(`${API_BASE}/triage/preview`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Triage preview failed");
-
-      const pr = badgeForPriority(data.priority);
-      const sent = sentimentLabel(data.sentimentScore);
-      previewEl.innerHTML = `
-        <div class="meta" style="margin-bottom: 8px;"><strong>Auto-triage preview</strong></div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <span class="badge"><span class="dot"></span>${escapeHtml(data.category)}</span>
-          <span class="badge ${pr.cls}"><span class="dot"></span>${escapeHtml(sent)} sentiment (${data.sentimentScore})</span>
-          <span class="badge ${pr.cls}"><span class="dot"></span>${escapeHtml(pr.label)} priority (${data.priority}/5)</span>
-        </div>
-        <div class="message" style="margin-top:10px;">
-          <div class="m-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Suggested resolution plan</div>
-          <div>${escapeHtml(data.triageSuggestion || "")}</div>
-        </div>
-      `;
-    } catch (e) {
-      previewEl.innerHTML = `<div class="meta"><strong>Auto-triage preview</strong>: unable to analyze right now.</div>`;
-    }
-  }, 380);
-
-  textarea.addEventListener("input", run);
-}
 
 function setTab(tabId) {
   qsa(".tab").forEach(btn => {
@@ -321,16 +275,12 @@ function connectResetButtons() {
   if (resetFeedback) {
     resetFeedback.addEventListener("click", () => {
       qs("#feedbackForm").reset();
-      const p = qs("#feedbackTriagePreview");
-      if (p) p.innerHTML = `<div class="meta"><strong>Auto-triage preview</strong>: start typing your message.</div>`;
     });
   }
 
   if (resetComplaint) {
     resetComplaint.addEventListener("click", () => {
       qs("#complaintForm").reset();
-      const p = qs("#complaintTriagePreview");
-      if (p) p.innerHTML = `<div class="meta"><strong>Auto-triage preview</strong>: start typing your message.</div>`;
     });
   }
 }
@@ -395,8 +345,6 @@ function init() {
   connectResetButtons();
   connectDefaultDates();
   connectTrack();
-  connectTriagePreview("#feedbackForm", "#feedbackTriagePreview");
-  connectTriagePreview("#complaintForm", "#complaintTriagePreview");
 
   const feedbackForm = qs("#feedbackForm");
   const complaintForm = qs("#complaintForm");

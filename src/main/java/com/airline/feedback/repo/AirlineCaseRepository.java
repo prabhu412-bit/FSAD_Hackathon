@@ -24,5 +24,7 @@ public interface AirlineCaseRepository extends JpaRepository<AirlineCase, String
 
   long countByCreatedAtAfter(Instant createdAt);
 
+  long countByCategory(String category);
+
 }
 

@@ -528,7 +528,7 @@ function connectAdmin() {
 
       preview.appendChild(renderCaseCard(updated));
       toast("Update applied", `Ticket ${updated.ticketNumber} updated.`, "success");
-      renderTimeline(qs("#timelinePreview"), updated.status);
+      loadKpis();
     } catch (e) {
       toast("Update failed", e.message || String(e), "error");
     } finally {
@@ -561,16 +561,172 @@ async function loadKpis() {
     qs("#kpiHot").textContent = summary.highPriorityCount ?? 0;
     qs("#kpiResolved").textContent = summary.resolvedCount ?? 0;
 
-    const sc = summary.statusCounts || {};
-    const activeStatus =
-      (sc.IN_PROGRESS > 0 ? "IN_PROGRESS" :
-        sc.TRIAGED > 0 ? "TRIAGED" :
-          sc.SUBMITTED > 0 ? "SUBMITTED" :
-            "SUBMITTED");
-    renderTimeline(qs("#timelinePreview"), activeStatus);
+    renderTypePieChart(summary.typeCounts || {});
+    renderCategoryPieChart(summary.categoryCounts || {});
   } catch {
     // ignore
   }
+}
+
+let typePieChartInstance = null;
+let categoryPieChartInstance = null;
+
+function renderTypePieChart(typeCounts) {
+  const canvas = qs("#caseTypePieChart");
+  if (!canvas) return;
+
+  const labels = ["Feedback", "Complaints"];
+  const keys   = ["FEEDBACK", "COMPLAINT"];
+  const colors = [
+    "rgba(96,  165, 250, 0.88)",   // blue
+    "rgba(251, 113, 133, 0.88)"    // rose
+  ];
+  const borders = [
+    "rgba(96,  165, 250, 1)",
+    "rgba(251, 113, 133, 1)"
+  ];
+
+  const raw   = keys.map(k => typeCounts[k] ?? 0);
+  const total = raw.reduce((a, b) => a + b, 0);
+  const data  = total === 0 ? [1, 1] : raw;
+
+  if (typePieChartInstance) {
+    typePieChartInstance.data.datasets[0].data = data;
+    typePieChartInstance.update();
+    return;
+  }
+
+  Chart.register(ChartDataLabels);
+
+  typePieChartInstance = new Chart(canvas, {
+    type: "doughnut",
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderColor: borders,
+        borderWidth: 2,
+        hoverOffset: 14
+      }]
+    },
+    options: {
+      responsive: false,
+      cutout: "45%",
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            color: "rgba(255,255,255,0.80)",
+            font: { size: 12 },
+            padding: 12,
+            boxWidth: 14
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const val = total === 0 ? 0 : raw[ctx.dataIndex];
+              const pct = total === 0 ? 50 : Math.round((raw[ctx.dataIndex] / total) * 100);
+              return ` ${ctx.label}: ${val} (${pct}%)`;
+            }
+          }
+        },
+        datalabels: {
+          color: "#fff",
+          font: { size: 13, weight: "bold" },
+          formatter: (value, ctx) => {
+            if (total === 0) return "";
+            const pct = Math.round((raw[ctx.dataIndex] / total) * 100);
+            return pct >= 7 ? pct + "%" : "";
+          }
+        }
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
+}
+
+function renderCategoryPieChart(categoryCounts) {
+  const canvas = qs("#caseCategoryPieChart");
+  if (!canvas) return;
+
+  const labels = ["Flight Disruption", "Baggage/Handling", "Billing/Refund", "Service Quality", "General Feedback"];
+  const keys   = labels; // category names are the keys themselves
+  const colors = [
+    "rgba(251, 191,  36, 0.88)",   // amber   – Flight Disruption
+    "rgba(167, 139, 250, 0.88)",   // purple  – Baggage/Handling
+    "rgba( 52, 211, 153, 0.88)",   // emerald – Billing/Refund
+    "rgba( 56, 189, 248, 0.88)",   // sky     – Service Quality
+    "rgba(251, 146, 60,  0.88)"    // orange  – General Feedback
+  ];
+  const borders = [
+    "rgba(251, 191,  36, 1)",
+    "rgba(167, 139, 250, 1)",
+    "rgba( 52, 211, 153, 1)",
+    "rgba( 56, 189, 248, 1)",
+    "rgba(251, 146, 60,  1)"
+  ];
+
+  const raw   = keys.map(k => categoryCounts[k] ?? 0);
+  const total = raw.reduce((a, b) => a + b, 0);
+  const data  = total === 0 ? [1, 1, 1, 1, 1] : raw;
+
+  if (categoryPieChartInstance) {
+    categoryPieChartInstance.data.datasets[0].data = data;
+    categoryPieChartInstance.update();
+    return;
+  }
+
+  Chart.register(ChartDataLabels);
+
+  categoryPieChartInstance = new Chart(canvas, {
+    type: "doughnut",
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderColor: borders,
+        borderWidth: 2,
+        hoverOffset: 14
+      }]
+    },
+    options: {
+      responsive: false,
+      cutout: "45%",
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            color: "rgba(255,255,255,0.80)",
+            font: { size: 11 },
+            padding: 10,
+            boxWidth: 12
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const val = total === 0 ? 0 : raw[ctx.dataIndex];
+              const pct = total === 0 ? 20 : Math.round((raw[ctx.dataIndex] / total) * 100);
+              return ` ${ctx.label}: ${val} (${pct}%)`;
+            }
+          }
+        },
+        datalabels: {
+          color: "#fff",
+          font: { size: 12, weight: "bold" },
+          formatter: (value, ctx) => {
+            if (total === 0) return "";
+            const pct = Math.round((raw[ctx.dataIndex] / total) * 100);
+            return pct >= 7 ? pct + "%" : "";
+          }
+        }
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
 }
 
 function connectResetButtons() {
@@ -580,16 +736,12 @@ function connectResetButtons() {
     resetFeedback.addEventListener("click", () => {
       const form = qs("#feedbackForm");
       if (form) form.reset();
-      const p = qs("#feedbackTriagePreview");
-      if (p) p.innerHTML = `<div class="meta"><strong>Auto-triage preview</strong>: start typing your message.</div>`;
     });
   }
   if (resetComplaint) {
     resetComplaint.addEventListener("click", () => {
       const form = qs("#complaintForm");
       if (form) form.reset();
-      const p = qs("#complaintTriagePreview");
-      if (p) p.innerHTML = `<div class="meta"><strong>Auto-triage preview</strong>: start typing your message.</div>`;
     });
   }
 }
@@ -609,13 +761,10 @@ function sentimentLabel(score) {
   return "Mixed";
 }
 
-function connectTriagePreview(formSelector, previewSelector) {
-  const form = qs(formSelector);
-  const previewEl = qs(previewSelector);
-  if (!form || !previewEl) return;
-
-  const textarea = form.querySelector("textarea[name='message']");
-  if (!textarea) return;
+function connectTriagePreview(textareaSelector, previewSelector) {
+  const textarea = document.querySelector(textareaSelector);
+  const previewEl = document.querySelector(previewSelector);
+  if (!textarea || !previewEl) return;
 
   const run = debounce(async () => {
     const msg = textarea.value.trim();
@@ -623,7 +772,6 @@ function connectTriagePreview(formSelector, previewSelector) {
       previewEl.innerHTML = `<div class="meta"><strong>Auto-triage preview</strong>: start typing your message.</div>`;
       return;
     }
-
     try {
       previewEl.innerHTML = `<div class="meta"><strong>Auto-triage preview</strong>: analyzing...</div>`;
       const res = await fetch(`${API_BASE}/triage/preview`, {
@@ -656,6 +804,9 @@ function connectTriagePreview(formSelector, previewSelector) {
   textarea.addEventListener("input", run);
 }
 
+
+
+
 function connectDefaultDates() {
   // default journey date = today, but allow user to change
   const today = new Date();
@@ -677,8 +828,7 @@ function init() {
   trackToggle();
   connectResetButtons();
   connectDefaultDates();
-  connectTriagePreview("#feedbackForm", "#feedbackTriagePreview");
-  connectTriagePreview("#complaintForm", "#complaintTriagePreview");
+  connectTriagePreview("#triageMessage", "#mainTriagePreview");
 
   const refreshBtn = qs("#btnRefreshAnalytics");
   if (refreshBtn) {
@@ -701,7 +851,7 @@ function init() {
     });
   }
 
-  renderTimeline(qs("#timelinePreview"), "SUBMITTED");
+
 
   // Default active tab on refresh (important after removing feedback/complaint panels).
   try {
