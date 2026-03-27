@@ -20,11 +20,14 @@ public class AirlineCaseService {
   private final AirlineCaseRepository repository;
   private final TicketService ticketService;
   private final TriageService triageService;
+  private final ExcelExportService excelExportService;
 
-  public AirlineCaseService(AirlineCaseRepository repository, TicketService ticketService, TriageService triageService) {
+  public AirlineCaseService(AirlineCaseRepository repository, TicketService ticketService,
+                            TriageService triageService, ExcelExportService excelExportService) {
     this.repository = repository;
     this.ticketService = ticketService;
     this.triageService = triageService;
+    this.excelExportService = excelExportService;
   }
 
   @Transactional
@@ -61,7 +64,9 @@ public class AirlineCaseService {
         now
     );
 
-    return repository.save(airlineCase);
+    AirlineCase saved = repository.save(airlineCase);
+    excelExportService.exportAll();
+    return saved;
   }
 
   public TriageService.TriageResult previewTriage(String message) {
@@ -88,7 +93,9 @@ public class AirlineCaseService {
 
     String agent = StringUtils.hasText(assignedAgent) ? assignedAgent.trim() : null;
     c.updateStatus(newStatus, agent, now);
-    return repository.save(c);
+    AirlineCase saved = repository.save(c);
+    excelExportService.exportAll();
+    return saved;
   }
 
   @Transactional
@@ -102,7 +109,9 @@ public class AirlineCaseService {
     if (c.getStatus() != CaseStatus.RESOLVED) {
       c.updateStatus(CaseStatus.RESOLVED, c.getAssignedAgent(), now);
     }
-    return repository.save(c);
+    AirlineCase saved = repository.save(c);
+    excelExportService.exportAll();
+    return saved;
   }
 
   @Transactional
@@ -110,6 +119,7 @@ public class AirlineCaseService {
     AirlineCase c = repository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("Case not found"));
     repository.delete(c);
+    excelExportService.exportAll();
   }
 }
 
