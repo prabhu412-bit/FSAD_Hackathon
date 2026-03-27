@@ -44,7 +44,31 @@ public class AuthInterceptor implements HandlerInterceptor {
       return true;
     }
 
+    if (path.equals("/admin-signup") || path.equals("/admin-signup.html")) {
+      if (role == AuthRole.ADMIN) {
+        response.sendRedirect("/");
+        return false;
+      }
+      if (role == AuthRole.CUSTOMER) {
+        response.sendRedirect("/customer/");
+        return false;
+      }
+      return true;
+    }
+
     if (path.equals("/customer/login") || path.equals("/customer/login.html")) {
+      if (role == AuthRole.CUSTOMER) {
+        response.sendRedirect("/customer/");
+        return false;
+      }
+      if (role == AuthRole.ADMIN) {
+        response.sendRedirect("/");
+        return false;
+      }
+      return true;
+    }
+
+    if (path.equals("/customer/signup") || path.equals("/customer/signup.html")) {
       if (role == AuthRole.CUSTOMER) {
         response.sendRedirect("/customer/");
         return false;
@@ -80,7 +104,9 @@ public class AuthInterceptor implements HandlerInterceptor {
       return false;
     }
 
-    if (path.startsWith("/customer/") && !path.equals("/customer/login.html")) {
+    if (path.startsWith("/customer/")
+        && !path.equals("/customer/login.html")
+        && !path.equals("/customer/signup.html")) {
       if (role == AuthRole.CUSTOMER) {
         return true;
       }

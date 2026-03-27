@@ -23,6 +23,8 @@ public class WebConfig implements WebMvcConfigurer {
             "/landing.html",
             "/admin-login",
             "/admin-login.html",
+            "/admin-signup",
+            "/admin-signup.html",
             "/customer",
             "/customer/",
             "/customer/**",

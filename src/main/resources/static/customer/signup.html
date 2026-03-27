@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SkyResolve Customer Login</title>
+    <title>SkyResolve Customer Signup</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -23,48 +23,53 @@
             </a>
             <div class="topbar-actions">
                 <button class="theme-btn" id="btnTheme" type="button"><i class="fa-solid fa-moon"></i> Theme</button>
-                <a class="pill-link" href="/admin-login.html"><i class="fa-solid fa-user-shield"></i> Admin Login</a>
+                <a class="pill-link" href="/customer/login.html"><i class="fa-solid fa-right-to-bracket"></i> Customer
+                    Login</a>
             </div>
         </header>
 
         <section class="shell">
             <aside class="pitch">
-                <p class="tag">Customer Portal</p>
-                <h1>Track your issue journey with clear, timely updates.</h1>
-                <p>Submit feedback, file complaints, and follow every case status from one simple customer workspace.
-                </p>
+                <p class="tag">Customer Onboarding</p>
+                <h1>Create your customer account in one minute.</h1>
+                <p>Sign up with your own username and email to submit complaints, feedback, and track all updates.</p>
                 <div class="stats">
                     <article>
-                        <p class="kpi">24h</p>
-                        <p class="meta">First response target</p>
+                        <p class="kpi">1m</p>
+                        <p class="meta">Quick signup flow</p>
                     </article>
                     <article>
-                        <p class="kpi">99%</p>
-                        <p class="meta">Case visibility coverage</p>
+                        <p class="kpi">24h</p>
+                        <p class="meta">Typical first response target</p>
                     </article>
                 </div>
             </aside>
 
             <article class="auth-card">
-                <h2>Customer Sign In</h2>
-                <p class="auth-sub">Login to submit new cases and track progress in real time.</p>
+                <h2>Customer Sign Up</h2>
+                <p class="auth-sub">Create your account to get full portal access.</p>
 
-                <form id="loginForm" class="form">
+                <form id="registerForm" class="form">
                     <div class="field">
-                        <label for="username">Username or Email</label>
-                        <input id="username" type="text" autocomplete="username"
-                            placeholder="Enter customer username or email" required />
+                        <label for="regUsername">Username</label>
+                        <input id="regUsername" type="text" autocomplete="username"
+                            placeholder="Choose customer username" required />
                     </div>
                     <div class="field">
-                        <label for="password">Password</label>
-                        <input id="password" type="password" autocomplete="current-password"
-                            placeholder="Enter password" required />
+                        <label for="regEmail">Email</label>
+                        <input id="regEmail" type="email" autocomplete="email" placeholder="Enter customer email"
+                            required />
+                    </div>
+                    <div class="field">
+                        <label for="regPassword">Password</label>
+                        <input id="regPassword" type="password" autocomplete="new-password"
+                            placeholder="Create password (min 6 chars)" minlength="6" required />
                     </div>
                     <div class="actions">
-                        <button class="btn btn-primary" id="btnLogin" type="submit"><i
-                                class="fa-solid fa-right-to-bracket"></i> Login to Customer Portal</button>
-                        <a class="secondary-link" href="/customer/signup.html">Create Customer Account</a>
-                        <!-- <a class="secondary-link" href="/landing">Back to Landing</a> -->
+                        <button class="btn btn-primary" id="btnRegister" type="submit"><i
+                                class="fa-solid fa-user-plus"></i> Create
+                            Customer Account</button>
+                        <a class="secondary-link" href="/customer/login.html">Already have customer account? Login</a>
                     </div>
                 </form>
             </article>
@@ -113,7 +118,7 @@
             btn.disabled = isLoading;
             const icon = btn.querySelector('i');
             if (isLoading && icon) icon.className = 'fa-solid fa-spinner fa-spin';
-            if (!isLoading && icon) icon.className = 'fa-solid fa-right-to-bracket';
+            if (!isLoading && icon) icon.className = 'fa-solid fa-user-plus';
         }
 
         async function ensureAnonymous() {
@@ -132,19 +137,20 @@
             }
         }
 
-        qs('#loginForm').addEventListener('submit', async (ev) => {
+        qs('#registerForm').addEventListener('submit', async (ev) => {
             ev.preventDefault();
-            const btn = qs('#btnLogin');
+            const btn = qs('#btnRegister');
             setLoading(btn, true);
 
             try {
                 const payload = {
-                    username: qs('#username').value.trim(),
-                    password: qs('#password').value,
+                    username: qs('#regUsername').value.trim(),
+                    email: qs('#regEmail').value.trim(),
+                    password: qs('#regPassword').value,
                     portal: 'CUSTOMER'
                 };
 
-                const res = await fetch('/api/auth/login', {
+                const res = await fetch('/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -152,15 +158,15 @@
                 const data = await res.json();
 
                 if (!res.ok) {
-                    throw new Error(data.message || 'Login failed');
+                    throw new Error(data.message || 'Registration failed');
                 }
 
-                toast('Welcome', 'Login successful.', 'success');
+                toast('Account created', 'Customer account created successfully.', 'success');
                 setTimeout(() => {
                     location.href = data.redirectPath || '/customer/';
-                }, 300);
+                }, 350);
             } catch (e) {
-                toast('Login failed', e.message || String(e), 'error');
+                toast('Registration failed', e.message || String(e), 'error');
             } finally {
                 setLoading(btn, false);
             }
