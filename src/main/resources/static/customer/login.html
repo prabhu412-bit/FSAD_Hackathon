@@ -51,9 +51,9 @@
 
                 <form id="loginForm" class="form">
                     <div class="field">
-                        <label for="username">Username</label>
-                        <input id="username" type="text" autocomplete="username" placeholder="Enter customer username"
-                            required />
+                        <label for="username">Username or Email</label>
+                        <input id="username" type="text" autocomplete="username"
+                            placeholder="Enter customer username or email" required />
                     </div>
                     <div class="field">
                         <label for="password">Password</label>
@@ -64,6 +64,29 @@
                         <button class="btn btn-primary" id="btnLogin" type="submit"><i
                                 class="fa-solid fa-right-to-bracket"></i> Login to Customer Portal</button>
                         <a class="secondary-link" href="/landing">Back to Landing</a>
+                    </div>
+                </form>
+
+                <p class="auth-sub" style="margin-top:18px;">New customer? Create your account.</p>
+                <form id="registerForm" class="form">
+                    <div class="field">
+                        <label for="regUsername">Username</label>
+                        <input id="regUsername" type="text" autocomplete="username"
+                            placeholder="Choose customer username" required />
+                    </div>
+                    <div class="field">
+                        <label for="regEmail">Email</label>
+                        <input id="regEmail" type="email" autocomplete="email" placeholder="Enter customer email"
+                            required />
+                    </div>
+                    <div class="field">
+                        <label for="regPassword">Password</label>
+                        <input id="regPassword" type="password" autocomplete="new-password"
+                            placeholder="Create password (min 6 chars)" minlength="6" required />
+                    </div>
+                    <div class="actions">
+                        <button class="btn" id="btnRegister" type="submit"><i class="fa-solid fa-user-plus"></i> Create
+                            Customer Account</button>
                     </div>
                 </form>
             </article>
@@ -107,12 +130,12 @@
             setTimeout(() => el.remove(), 3200);
         }
 
-        function setLoading(btn, isLoading) {
+        function setLoading(btn, isLoading, defaultIcon = 'fa-solid fa-right-to-bracket') {
             if (!btn) return;
             btn.disabled = isLoading;
             const icon = btn.querySelector('i');
             if (isLoading && icon) icon.className = 'fa-solid fa-spinner fa-spin';
-            if (!isLoading && icon) icon.className = 'fa-solid fa-right-to-bracket';
+            if (!isLoading && icon) icon.className = defaultIcon;
         }
 
         async function ensureAnonymous() {
@@ -162,6 +185,41 @@
                 toast('Login failed', e.message || String(e), 'error');
             } finally {
                 setLoading(btn, false);
+            }
+        });
+
+        qs('#registerForm').addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            const btn = qs('#btnRegister');
+            setLoading(btn, true, 'fa-solid fa-user-plus');
+
+            try {
+                const payload = {
+                    username: qs('#regUsername').value.trim(),
+                    email: qs('#regEmail').value.trim(),
+                    password: qs('#regPassword').value,
+                    portal: 'CUSTOMER'
+                };
+
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.message || 'Registration failed');
+                }
+
+                toast('Account created', 'Customer account created successfully.', 'success');
+                setTimeout(() => {
+                    location.href = data.redirectPath || '/customer/';
+                }, 350);
+            } catch (e) {
+                toast('Registration failed', e.message || String(e), 'error');
+            } finally {
+                setLoading(btn, false, 'fa-solid fa-user-plus');
             }
         });
 

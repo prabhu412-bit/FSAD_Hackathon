@@ -2,8 +2,10 @@ package com.airline.feedback.api;
 
 import com.airline.feedback.api.dto.LoginRequest;
 import com.airline.feedback.api.dto.LoginResponse;
+import com.airline.feedback.api.dto.RegisterRequest;
 import com.airline.feedback.auth.AuthRole;
 import com.airline.feedback.auth.AuthSession;
+import com.airline.feedback.model.AuthUser;
 import com.airline.feedback.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -37,8 +39,26 @@ public class AuthController {
 
     HttpSession session = servletRequest.getSession(true);
     session.setAttribute(AuthSession.ROLE, role.name());
-    session.setAttribute(AuthSession.USERNAME, request.getUsername());
-    return ResponseEntity.ok(LoginResponse.of(request.getUsername(), role));
+    session.setAttribute(AuthSession.USERNAME, request.getUsername().trim());
+    return ResponseEntity.ok(LoginResponse.of(request.getUsername().trim(), role));
+  }
+
+  @PostMapping("/register")
+  public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest servletRequest) {
+    AuthUser created = authService.register(
+        request.getPortal(),
+        request.getUsername(),
+        request.getEmail(),
+        request.getPassword()
+    );
+
+    // Auto-login after successful registration.
+    HttpSession session = servletRequest.getSession(true);
+    session.setAttribute(AuthSession.ROLE, created.getRole().name());
+    session.setAttribute(AuthSession.USERNAME, created.getUsername());
+
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(LoginResponse.of(created.getUsername(), created.getRole()));
   }
 
   @PostMapping("/logout")
@@ -74,6 +94,11 @@ public class AuthController {
         ? fieldError.getDefaultMessage()
         : "Validation failed";
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorBody(message));
+  }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ErrorBody> badRequest(IllegalArgumentException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorBody(ex.getMessage()));
   }
 
   public static class ErrorBody {
