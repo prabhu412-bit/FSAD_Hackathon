@@ -1,4 +1,5 @@
 const API_BASE = "/api";
+const CUSTOMER_TAB_KEY = "airline-customer-active-tab";
 
 function qs(sel) {
   return document.querySelector(sel);
@@ -75,6 +76,13 @@ function setTab(tabId) {
     panel.classList.add("hidden");
     if (panel.id === tabId) panel.classList.remove("hidden");
   });
+
+  try {
+    localStorage.setItem(CUSTOMER_TAB_KEY, tabId);
+    history.replaceState(null, "", `#${tabId}`);
+  } catch {
+    // ignore
+  }
 }
 
 function connectTabs() {
@@ -432,6 +440,21 @@ async function init() {
       e.preventDefault();
       await handleCreateCase(complaintForm, "/complaints", "Complaint");
     });
+  }
+
+  try {
+    const validTabIds = new Set(qsa(".tab").map((b) => b.dataset.tab));
+    const hashTab = (window.location.hash || "").replace("#", "").trim();
+    const storedTab = localStorage.getItem(CUSTOMER_TAB_KEY);
+    const initialTab =
+      hashTab && validTabIds.has(hashTab)
+        ? hashTab
+        : storedTab && validTabIds.has(storedTab)
+          ? storedTab
+          : "feedbackTab";
+    setTab(initialTab);
+  } catch {
+    setTab("feedbackTab");
   }
 }
 

@@ -1,4 +1,5 @@
 const API_BASE = "/api";
+const ADMIN_TAB_KEY = "airline-admin-active-tab";
 
 function qs(sel) {
   return document.querySelector(sel);
@@ -224,7 +225,8 @@ function setTab(tabId) {
 
   // Remember last active tab so refresh keeps the same screen.
   try {
-    localStorage.setItem("airline-active-tab", tabId);
+    localStorage.setItem(ADMIN_TAB_KEY, tabId);
+    history.replaceState(null, "", `#${tabId}`);
   } catch {
     // ignore
   }
@@ -958,9 +960,16 @@ async function init() {
   // Default active tab on refresh (important after removing feedback/complaint panels).
   try {
     const validTabIds = new Set(qsa(".tab").map((b) => b.dataset.tab));
-    const storedTab = localStorage.getItem("airline-active-tab");
+    const hashTab = (window.location.hash || "").replace("#", "").trim();
+    const storedTab =
+      localStorage.getItem(ADMIN_TAB_KEY) ||
+      localStorage.getItem("airline-active-tab");
     const initialTab =
-      storedTab && validTabIds.has(storedTab) ? storedTab : "trackTab";
+      hashTab && validTabIds.has(hashTab)
+        ? hashTab
+        : storedTab && validTabIds.has(storedTab)
+          ? storedTab
+          : "trackTab";
     setTab(initialTab);
     if (initialTab === "analyticsTab") loadAnalytics(true);
   } catch {
