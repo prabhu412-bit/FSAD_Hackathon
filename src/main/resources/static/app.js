@@ -293,6 +293,8 @@ async function loadAnalytics(force = false) {
       for (const c of complaints) {
         const item = document.createElement("div");
         item.className = "complaint-item";
+        item.dataset.openAdminTicket = c.ticketNumber || "";
+        item.style.cursor = "pointer";
         item.innerHTML = `
           <div class="top">
             <div>
@@ -302,6 +304,7 @@ async function loadAnalytics(force = false) {
             <div class="meta">${escapeHtml(formatDateTime(c.createdAt))}</div>
           </div>
           <div class="msg">${escapeHtml(c.message || "")}</div>
+          <div class="meta" style="margin-top:8px;">Click this issue to open Admin Panel with ticket prefilled.</div>
           <div style="margin-top:10px; display:flex; justify-content:flex-end;">
             <button class="btn btn-danger btn-mini" type="button" data-delete-id="${escapeHtml(c.id)}">
               <i class="fa-solid fa-trash"></i>
@@ -323,6 +326,8 @@ async function loadAnalytics(force = false) {
       for (const c of feedbackSorted) {
         const item = document.createElement("div");
         item.className = "complaint-item";
+        item.dataset.openAdminTicket = c.ticketNumber || "";
+        item.style.cursor = "pointer";
         item.innerHTML = `
           <div class="top">
             <div>
@@ -332,6 +337,7 @@ async function loadAnalytics(force = false) {
             <div class="meta">${escapeHtml(formatDateTime(c.createdAt))}</div>
           </div>
           <div class="msg">${escapeHtml(c.message || "")}</div>
+          <div class="meta" style="margin-top:8px;">Click this issue to open Admin Panel with ticket prefilled.</div>
           <div style="margin-top:10px; display:flex; justify-content:flex-end;">
             <button class="btn btn-danger btn-mini" type="button" data-delete-id="${escapeHtml(c.id)}">
               <i class="fa-solid fa-trash"></i>
@@ -576,6 +582,20 @@ function connectAdmin() {
       setLoading(submitBtn, false);
     }
   });
+}
+
+function openAdminPanelForTicket(ticketNumber) {
+  const ticket = (ticketNumber || "").trim();
+  if (!ticket) return;
+
+  setTab("adminTab");
+  const input = qs('#adminForm input[name="ticketNumber"]');
+  if (input) {
+    input.value = ticket;
+    input.focus();
+  }
+
+  toast("Issue loaded", `Ticket ${ticket} added in Admin Panel.`, "success");
 }
 
 function connectThemeToggle() {
@@ -996,7 +1016,17 @@ async function init() {
       e.target && e.target.closest
         ? e.target.closest("[data-delete-id]")
         : null;
-    if (!btn) return;
+
+    if (!btn) {
+      const row =
+        e.target && e.target.closest
+          ? e.target.closest("[data-open-admin-ticket]")
+          : null;
+      if (row) {
+        openAdminPanelForTicket(row.dataset.openAdminTicket);
+      }
+      return;
+    }
 
     const id = btn.dataset.deleteId;
     if (!id) return;

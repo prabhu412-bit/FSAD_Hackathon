@@ -41,6 +41,7 @@ public class AuthController {
     HttpSession session = servletRequest.getSession(true);
     session.setAttribute(AuthSession.ROLE, role.name());
     session.setAttribute(AuthSession.USERNAME, user.getUsername());
+    session.setAttribute(AuthSession.EMAIL, user.getEmail());
     return ResponseEntity.ok(LoginResponse.of(user.getUsername(), user.getEmail(), role));
   }
 
@@ -57,6 +58,7 @@ public class AuthController {
     HttpSession session = servletRequest.getSession(true);
     session.setAttribute(AuthSession.ROLE, created.getRole().name());
     session.setAttribute(AuthSession.USERNAME, created.getUsername());
+    session.setAttribute(AuthSession.EMAIL, created.getEmail());
 
     return ResponseEntity.status(HttpStatus.CREATED)
       .body(LoginResponse.of(created.getUsername(), created.getEmail(), created.getRole()));
@@ -80,11 +82,16 @@ public class AuthController {
 
     Object roleObj = session.getAttribute(AuthSession.ROLE);
     Object usernameObj = session.getAttribute(AuthSession.USERNAME);
+    Object emailObj = session.getAttribute(AuthSession.EMAIL);
     if (!(roleObj instanceof String roleValue) || !(usernameObj instanceof String usernameValue)) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorBody("Not authenticated"));
     }
 
     AuthRole role = AuthRole.valueOf(roleValue);
+    if (emailObj instanceof String emailValue && !emailValue.isBlank()) {
+      return ResponseEntity.ok(LoginResponse.of(usernameValue, emailValue, role));
+    }
+
     AuthUser user = authService.findByRoleAndIdentifier(role, usernameValue).orElse(null);
     if (user != null) {
       return ResponseEntity.ok(LoginResponse.of(user.getUsername(), user.getEmail(), role));

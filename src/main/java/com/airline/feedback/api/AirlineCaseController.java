@@ -7,15 +7,20 @@ import com.airline.feedback.api.dto.CreateFeedbackRequest;
 import com.airline.feedback.api.dto.TriagePreviewRequest;
 import com.airline.feedback.api.dto.TriagePreviewResponse;
 import com.airline.feedback.api.dto.UpdateStatusRequest;
+import com.airline.feedback.auth.AuthRole;
+import com.airline.feedback.auth.AuthSession;
 import com.airline.feedback.model.CaseStatus;
 import com.airline.feedback.model.CaseType;
 import com.airline.feedback.model.AirlineCase;
 import com.airline.feedback.service.AirlineCaseService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -32,11 +37,13 @@ public class AirlineCaseController {
   }
 
   @PostMapping("/feedback")
-  public ResponseEntity<AirlineCaseResponse> createFeedback(@Valid @RequestBody CreateFeedbackRequest req) {
+  public ResponseEntity<AirlineCaseResponse> createFeedback(@Valid @RequestBody CreateFeedbackRequest req,
+                                                            HttpServletRequest request) {
+    String email = resolveRequestEmailForCreate(request, req.getCustomerEmail());
     AirlineCase created = service.createFeedbackOrComplaint(
         CaseType.FEEDBACK,
         req.getCustomerName(),
-        req.getCustomerEmail(),
+        email,
         req.getFlightNumber(),
         req.getJourneyDate(),
         req.getContactChannel(),
@@ -46,11 +53,13 @@ public class AirlineCaseController {
   }
 
   @PostMapping("/complaints")
-  public ResponseEntity<AirlineCaseResponse> createComplaint(@Valid @RequestBody CreateComplaintRequest req) {
+  public ResponseEntity<AirlineCaseResponse> createComplaint(@Valid @RequestBody CreateComplaintRequest req,
+                                                             HttpServletRequest request) {
+    String email = resolveRequestEmailForCreate(request, req.getCustomerEmail());
     AirlineCase created = service.createFeedbackOrComplaint(
         CaseType.COMPLAINT,
         req.getCustomerName(),
-        req.getCustomerEmail(),
+        email,
         req.getFlightNumber(),
         req.getJourneyDate(),
         req.getContactChannel(),
@@ -71,17 +80,31 @@ public class AirlineCaseController {
   }
 
   @GetMapping("/cases/lookup")
-  public ResponseEntity<AirlineCaseResponse> lookupByTicket(@RequestParam("ticketNumber") String ticketNumber) {
+  public ResponseEntity<AirlineCaseResponse> lookupByTicket(@RequestParam("ticketNumber") String ticketNumber,
+                                                            HttpServletRequest request) {
     AirlineCase found = service.getByTicketNumber(ticketNumber);
+    AuthRole role = resolveRole(request);
+    if (role == AuthRole.CUSTOMER) {
+      String customerEmail = resolveCustomerEmailOrThrow(request);
+      if (!customerEmail.equalsIgnoreCase(found.getCustomerEmail())) {
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Customers can only access their own cases");
+      }
+    }
     return ResponseEntity.ok(AirlineCaseResponse.from(found));
   }
 
   @GetMapping("/cases/my")
   public ResponseEntity<List<AirlineCaseResponse>> latestForEmail(
       @RequestParam("email") String email,
-      @RequestParam(name = "limit", required = false, defaultValue = "10") int limit
+      @RequestParam(name = "limit", required = false, defaultValue = "10") int limit,
+      HttpServletRequest request
   ) {
     if (limit < 1 || limit > 25) limit = 10;
+
+    AuthRole role = resolveRole(request);
+    if (role == AuthRole.CUSTOMER) {
+      email = resolveCustomerEmailOrThrow(request);
+    }
 
     List<AirlineCaseResponse> res = service.getLatestByEmail(email, limit)
         .stream()
@@ -144,6 +167,40 @@ public class AirlineCaseController {
     public String getMessage() {
       return message;
     }
+  }
+
+  private AuthRole resolveRole(HttpServletRequest request) {
+    HttpSession session = request.getSession(false);
+    if (session == null) return null;
+    Object roleObj = session.getAttribute(AuthSession.ROLE);
+    if (!(roleObj instanceof String roleName)) return null;
+    try {
+      return AuthRole.valueOf(roleName);
+    } catch (IllegalArgumentException ex) {
+      return null;
+    }
+  }
+
+  private String resolveCustomerEmailOrThrow(HttpServletRequest request) {
+    HttpSession session = request.getSession(false);
+    if (session == null) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login required");
+    }
+
+    Object emailObj = session.getAttribute(AuthSession.EMAIL);
+    if (emailObj instanceof String email && !email.isBlank()) {
+      return email.trim();
+    }
+
+    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Customer email missing in session");
+  }
+
+  private String resolveRequestEmailForCreate(HttpServletRequest request, String requestedEmail) {
+    AuthRole role = resolveRole(request);
+    if (role == AuthRole.CUSTOMER) {
+      return resolveCustomerEmailOrThrow(request);
+    }
+    return requestedEmail;
   }
 }
 
