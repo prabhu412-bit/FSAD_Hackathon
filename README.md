@@ -15,8 +15,8 @@ mvn spring-boot:run
 ```
 
 Open:
-- Dashboard: https://bit.ly/Casesolver
-- Customer Portal: https://bit.ly/skyResolver
+- Dashboard: https://airline-feedback-system.onrender.com
+- Customer Portal: https://airline-feedback-system.onrender.com/customer/
 
 ## Demo data
 
