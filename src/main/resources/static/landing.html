@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SkyResolve | Intelligent Airline Feedback Platform</title>
+    <meta name="description"
+        content="SkyResolve helps airlines triage complaints, resolve cases faster, and deliver a premium customer experience." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="/landing.css?v=20260327-1" />
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="/landing" aria-label="SkyResolve home">
+            <span class="brand-mark"><i class="fa-solid fa-plane-up"></i></span>
+            <span class="brand-text">SkyResolve</span>
+        </a>
+        <nav class="top-actions" aria-label="Portal login actions">
+            <button class="btn btn-ghost" id="btnTheme" type="button"><i class="fa-solid fa-moon"></i> Theme</button>
+            <a class="btn btn-ghost" href="/customer/login.html"><i class="fa-solid fa-user"></i> Customer Login</a>
+            <a class="btn btn-primary" href="/admin-login.html"><i class="fa-solid fa-shield-halved"></i> Admin
+                Login</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-copy">
+                <p class="eyebrow">Airline Service Resolution Platform</p>
+                <h1>Turn feedback into trust, and complaints into fast resolution.</h1>
+                <p class="lead">One platform for triage, tracking, analytics, and closure. Built for operations teams
+                    that need speed, clarity, and accountability.</p>
+                <div class="hero-actions">
+                    <a class="btn btn-primary" href="/admin-login.html"><i class="fa-solid fa-gauge-high"></i> Launch
+                        Admin Portal</a>
+                    <a class="btn btn-ghost" href="/customer/login.html"><i class="fa-solid fa-headset"></i> Open
+                        Customer Portal</a>
+                </div>
+                <div class="hero-meta">
+                    <span><i class="fa-solid fa-bolt"></i> Real-time triage</span>
+                    <span><i class="fa-solid fa-shield"></i> Role-based access</span>
+                    <span><i class="fa-solid fa-file-excel"></i> Excel export ready</span>
+                </div>
+            </div>
+            <div class="hero-card">
+                <h2>Live Snapshot</h2>
+                <div class="snapshot-grid">
+                    <article>
+                        <p class="kpi" data-target="98">0</p>
+                        <p>Cases resolved within SLA</p>
+                    </article>
+                    <article>
+                        <p class="kpi" data-target="37">0</p>
+                        <p>Avg. resolution time cut</p>
+                    </article>
+                    <article>
+                        <p class="kpi" data-target="24">0</p>
+                        <p>Hours to first meaningful update</p>
+                    </article>
+                    <article>
+                        <p class="kpi" data-target="100">0</p>
+                        <p>Traceability across every ticket</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h3>Why teams choose SkyResolve</h3>
+            <div class="feature-grid">
+                <article class="feature">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <h4>Smart Triage</h4>
+                    <p>Auto-prioritize messages by urgency and category so agents focus where it matters first.</p>
+                </article>
+                <article class="feature">
+                    <i class="fa-solid fa-route"></i>
+                    <h4>Full Case Journey</h4>
+                    <p>From submission to closure, every step is visible to both teams and customers.</p>
+                </article>
+                <article class="feature">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <h4>Operational Analytics</h4>
+                    <p>Track bottlenecks, high-priority patterns, and performance trends in one dashboard.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section">
+            <h3>How it works</h3>
+            <div class="steps">
+                <article class="step">
+                    <span>01</span>
+                    <h4>Capture</h4>
+                    <p>Customers submit feedback or complaints via a clean, guided portal experience.</p>
+                </article>
+                <article class="step">
+                    <span>02</span>
+                    <h4>Resolve</h4>
+                    <p>Admin teams triage, assign, update status, and record final resolution notes.</p>
+                </article>
+                <article class="step">
+                    <span>03</span>
+                    <h4>Improve</h4>
+                    <p>Use analytics and exports to drive process improvements and service quality.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="cta">
+            <h3>Ready to run your support operation with precision?</h3>
+            <p>Get your team started in minutes with role-specific portals and enterprise-ready case flow.</p>
+            <div class="hero-actions">
+                <a class="btn btn-primary" href="/admin-login.html">Go to Admin Login</a>
+                <a class="btn btn-ghost" href="/customer/login.html">Go to Customer Login</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>SkyResolve · Airline Feedback & Complaint Resolution</p>
+    </footer>
+
+    <script>
+        (function () {
+            const btn = document.querySelector('#btnTheme');
+            const icon = btn ? btn.querySelector('i') : null;
+            const stored = localStorage.getItem('airline-theme');
+            const mode = stored === 'light' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', mode);
+            document.body.classList.toggle('light', mode === 'light');
+            if (icon) icon.className = mode === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+                    const next = current === 'light' ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', next);
+                    document.body.classList.toggle('light', next === 'light');
+                    localStorage.setItem('airline-theme', next);
+                    if (icon) icon.className = next === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+                });
+            }
+        })();
+
+        (function () {
+            const counters = document.querySelectorAll('.kpi[data-target]');
+            counters.forEach((el) => {
+                const target = Number(el.getAttribute('data-target') || 0);
+                let current = 0;
+                const step = Math.max(1, Math.floor(target / 28));
+                const timer = setInterval(() => {
+                    current += step;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    el.textContent = current + (target >= 90 ? '%' : 'h');
+                }, 24);
+            });
+        })();
+    </script>
+</body>
+
+</html>

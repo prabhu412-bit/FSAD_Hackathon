@@ -19,6 +19,8 @@ public class WebConfig implements WebMvcConfigurer {
         .addPathPatterns(
             "/",
             "/index.html",
+            "/landing",
+            "/landing.html",
             "/admin-login",
             "/admin-login.html",
             "/customer",

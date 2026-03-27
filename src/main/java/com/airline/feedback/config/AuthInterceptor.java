@@ -20,6 +20,18 @@ public class AuthInterceptor implements HandlerInterceptor {
     String path = request.getRequestURI();
     AuthRole role = getRole(request);
 
+    if (path.equals("/landing") || path.equals("/landing.html")) {
+      if (role == AuthRole.ADMIN) {
+        response.sendRedirect("/");
+        return false;
+      }
+      if (role == AuthRole.CUSTOMER) {
+        response.sendRedirect("/customer/");
+        return false;
+      }
+      return true;
+    }
+
     if (path.equals("/admin-login") || path.equals("/admin-login.html")) {
       if (role == AuthRole.ADMIN) {
         response.sendRedirect("/");
@@ -52,7 +64,11 @@ public class AuthInterceptor implements HandlerInterceptor {
       if (role == AuthRole.ADMIN) {
         return true;
       }
-      response.sendRedirect("/admin-login.html");
+      if (role == AuthRole.CUSTOMER) {
+        response.sendRedirect("/customer/");
+        return false;
+      }
+      response.sendRedirect("/landing");
       return false;
     }
 

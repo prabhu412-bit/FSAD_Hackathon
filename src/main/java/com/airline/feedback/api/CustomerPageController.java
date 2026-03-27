@@ -11,10 +11,14 @@ public class CustomerPageController {
 
   @GetMapping("/")
   public String index(HttpServletRequest request) {
-    if (readRole(request) != AuthRole.ADMIN) {
-      return "redirect:/admin-login.html";
+    AuthRole role = readRole(request);
+    if (role == AuthRole.ADMIN) {
+      return "forward:/index.html";
     }
-    return "forward:/index.html";
+    if (role == AuthRole.CUSTOMER) {
+      return "redirect:/customer/";
+    }
+    return "redirect:/landing";
   }
 
   // Make `/customer` work (friendly mode) instead of requiring `/customer/index.html`.
@@ -34,6 +38,11 @@ public class CustomerPageController {
   @GetMapping("/customer/login")
   public String customerLogin() {
     return "forward:/customer/login.html";
+  }
+
+  @GetMapping("/landing")
+  public String landing() {
+    return "forward:/landing.html";
   }
 
   private AuthRole readRole(HttpServletRequest request) {
