@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.Instant;
+import java.util.Optional;
 
 @Service
 public class AuthService {
@@ -21,8 +22,12 @@ public class AuthService {
   }
 
   public boolean authenticate(AuthRole role, String username, String password) {
+    return authenticateAndGetUser(role, username, password).isPresent();
+  }
+
+  public Optional<AuthUser> authenticateAndGetUser(AuthRole role, String username, String password) {
     if (!StringUtils.hasText(username) || !StringUtils.hasText(password) || role == null) {
-      return false;
+      return Optional.empty();
     }
 
     String identifier = username.trim();
@@ -30,7 +35,19 @@ public class AuthService {
         .or(() -> authUserRepository.findByRoleAndEmailIgnoreCase(role, identifier))
         .orElse(null);
 
-    return user != null && passwordEncoder.matches(password, user.getPasswordHash());
+    if (user != null && passwordEncoder.matches(password, user.getPasswordHash())) {
+      return Optional.of(user);
+    }
+    return Optional.empty();
+  }
+
+  public Optional<AuthUser> findByRoleAndIdentifier(AuthRole role, String identifier) {
+    if (role == null || !StringUtils.hasText(identifier)) {
+      return Optional.empty();
+    }
+    String normalized = identifier.trim();
+    return authUserRepository.findByRoleAndUsernameIgnoreCase(role, normalized)
+        .or(() -> authUserRepository.findByRoleAndEmailIgnoreCase(role, normalized));
   }
 
   public AuthUser register(AuthRole role, String username, String email, String password) {

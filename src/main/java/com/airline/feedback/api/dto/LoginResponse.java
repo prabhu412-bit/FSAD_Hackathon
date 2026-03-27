@@ -5,12 +5,18 @@ import com.airline.feedback.auth.AuthRole;
 public class LoginResponse {
 
   private String username;
+  private String email;
   private AuthRole role;
   private String redirectPath;
 
   public static LoginResponse of(String username, AuthRole role) {
+    return of(username, null, role);
+  }
+
+  public static LoginResponse of(String username, String email, AuthRole role) {
     LoginResponse response = new LoginResponse();
     response.setUsername(username);
+    response.setEmail(email);
     response.setRole(role);
     response.setRedirectPath(role == AuthRole.ADMIN ? "/" : "/customer/");
     return response;
@@ -22,6 +28,14 @@ public class LoginResponse {
 
   public void setUsername(String username) {
     this.username = username;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
   }
 
   public AuthRole getRole() {

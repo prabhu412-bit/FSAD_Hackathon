@@ -1,5 +1,6 @@
 const API_BASE = "/api";
 const CUSTOMER_TAB_KEY = "airline-customer-active-tab";
+let currentCustomerEmail = "";
 
 function qs(sel) {
   return document.querySelector(sel);
@@ -87,7 +88,13 @@ function setTab(tabId) {
 
 function connectTabs() {
   qsa(".tab").forEach((btn) => {
-    btn.addEventListener("click", () => setTab(btn.dataset.tab));
+    btn.addEventListener("click", () => {
+      const tabId = btn.dataset.tab;
+      setTab(tabId);
+      if (tabId === "myComplaintsTab") {
+        loadMyComplaints(true);
+      }
+    });
   });
 }
 
@@ -290,6 +297,66 @@ function renderCaseResults(cases) {
   for (const c of cases) out.appendChild(renderCaseCard(c));
 }
 
+function renderMyComplaints(cases) {
+  const out = qs("#myComplaintsResults");
+  if (!out) return;
+
+  out.innerHTML = "";
+  if (!cases || cases.length === 0) {
+    out.innerHTML = `<div class="case-card"><div class="meta"><strong>No complaints found for your account.</strong></div></div>`;
+    return;
+  }
+
+  for (const c of cases) {
+    out.appendChild(renderCaseCard(c));
+  }
+}
+
+async function loadMyComplaints(showToast = false) {
+  const hint = qs("#myComplaintsHint");
+  if (!currentCustomerEmail) {
+    if (hint) {
+      hint.textContent =
+        "Customer email not available in session. Please login again.";
+    }
+    return;
+  }
+
+  if (hint) {
+    hint.textContent = `Showing complaints for ${currentCustomerEmail}`;
+  }
+
+  try {
+    const cases = await lookupByEmail(currentCustomerEmail, 25);
+    const complaints = (cases || [])
+      .filter((c) => c.type === "COMPLAINT")
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    renderMyComplaints(complaints);
+    if (showToast) {
+      toast(
+        "Complaints loaded",
+        `${complaints.length} complaint(s) found.`,
+        "success",
+      );
+    }
+  } catch (e) {
+    if (hint) {
+      hint.textContent = "Failed to load complaints.";
+    }
+    toast("Load failed", e.message || String(e), "error");
+  }
+}
+
+function fillCustomerDefaults() {
+  if (!currentCustomerEmail) return;
+  qsa('input[name="customerEmail"]').forEach((el) => {
+    if (!el.value) {
+      el.value = currentCustomerEmail;
+    }
+  });
+}
+
 function connectResetButtons() {
   const resetFeedback = qs("#resetFeedback");
   const resetComplaint = qs("#resetComplaint");
@@ -364,6 +431,7 @@ async function ensureCustomerSession() {
     if (userTag) {
       userTag.innerHTML = `<i class="fa-solid fa-user"></i> ${escapeHtml(me.username || "Customer")}`;
     }
+    currentCustomerEmail = (me.email || "").trim();
     return true;
   } catch {
     location.href = "/customer/login.html";
@@ -407,6 +475,11 @@ async function handleCreateCase(form, endpoint, kindLabel) {
       `${kindLabel} created. Ticket: ${data.ticketNumber}`,
       "success",
     );
+
+    if (kindLabel === "Complaint") {
+      setTab("myComplaintsTab");
+      await loadMyComplaints(true);
+    }
   } catch (e) {
     toast("Submission failed", e.message || String(e), "error");
   } finally {
@@ -424,6 +497,11 @@ async function init() {
   connectResetButtons();
   connectDefaultDates();
   connectTrack();
+  fillCustomerDefaults();
+
+  qs("#btnRefreshMyComplaints")?.addEventListener("click", () => {
+    loadMyComplaints(true);
+  });
 
   const feedbackForm = qs("#feedbackForm");
   const complaintForm = qs("#complaintForm");
@@ -453,6 +531,9 @@ async function init() {
           ? storedTab
           : "feedbackTab";
     setTab(initialTab);
+    if (initialTab === "myComplaintsTab") {
+      await loadMyComplaints();
+    }
   } catch {
     setTab("feedbackTab");
   }

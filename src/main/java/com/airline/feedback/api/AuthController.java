@@ -33,14 +33,15 @@ public class AuthController {
   @PostMapping("/login")
   public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request, HttpServletRequest servletRequest) {
     AuthRole role = request.getPortal();
-    if (!authService.authenticate(role, request.getUsername(), request.getPassword())) {
+    AuthUser user = authService.authenticateAndGetUser(role, request.getUsername(), request.getPassword()).orElse(null);
+    if (user == null) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorBody("Invalid username or password"));
     }
 
     HttpSession session = servletRequest.getSession(true);
     session.setAttribute(AuthSession.ROLE, role.name());
-    session.setAttribute(AuthSession.USERNAME, request.getUsername().trim());
-    return ResponseEntity.ok(LoginResponse.of(request.getUsername().trim(), role));
+    session.setAttribute(AuthSession.USERNAME, user.getUsername());
+    return ResponseEntity.ok(LoginResponse.of(user.getUsername(), user.getEmail(), role));
   }
 
   @PostMapping("/register")
@@ -58,7 +59,7 @@ public class AuthController {
     session.setAttribute(AuthSession.USERNAME, created.getUsername());
 
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(LoginResponse.of(created.getUsername(), created.getRole()));
+      .body(LoginResponse.of(created.getUsername(), created.getEmail(), created.getRole()));
   }
 
   @PostMapping("/logout")
@@ -84,7 +85,11 @@ public class AuthController {
     }
 
     AuthRole role = AuthRole.valueOf(roleValue);
-    return ResponseEntity.ok(LoginResponse.of(usernameValue, role));
+    AuthUser user = authService.findByRoleAndIdentifier(role, usernameValue).orElse(null);
+    if (user != null) {
+      return ResponseEntity.ok(LoginResponse.of(user.getUsername(), user.getEmail(), role));
+    }
+    return ResponseEntity.ok(LoginResponse.of(usernameValue, null, role));
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)

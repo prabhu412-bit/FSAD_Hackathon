@@ -88,6 +88,9 @@
         <button class="tab" data-tab="trackTab" type="button" role="tab">
           <i class="fa-solid fa-magnifying-glass"></i> Track Case
         </button>
+        <button class="tab" data-tab="myComplaintsTab" type="button" role="tab">
+          <i class="fa-solid fa-folder-open"></i> My Complaints
+        </button>
       </nav>
     </section>
 
@@ -198,6 +201,25 @@
           <div>
             <h2><i class="fa-solid fa-diagram-project"></i> Case Results</h2>
             <div id="caseResults" class="results" style="margin-top:14px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Complaints -->
+      <div id="myComplaintsTab" class="tab-panel hidden">
+        <div class="split">
+          <div>
+            <h2><i class="fa-solid fa-folder-open"></i> My Complaints</h2>
+            <div class="card" style="margin-top:14px;">
+              <div class="meta" id="myComplaintsHint">Loading your complaints...</div>
+              <button class="btn btn-primary" id="btnRefreshMyComplaints" type="button" style="margin-top:12px;">
+                <i class="fa-solid fa-rotate"></i> Refresh
+              </button>
+            </div>
+          </div>
+          <div>
+            <h2><i class="fa-solid fa-list-check"></i> Complaint Details</h2>
+            <div id="myComplaintsResults" class="results" style="margin-top:14px;"></div>
           </div>
         </div>
       </div>
