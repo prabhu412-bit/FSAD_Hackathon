@@ -1,0 +1,90 @@
+package com.airline.feedback.api;
+
+import com.airline.feedback.api.dto.LoginRequest;
+import com.airline.feedback.api.dto.LoginResponse;
+import com.airline.feedback.auth.AuthRole;
+import com.airline.feedback.auth.AuthSession;
+import com.airline.feedback.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+
+  private final AuthService authService;
+
+  public AuthController(AuthService authService) {
+    this.authService = authService;
+  }
+
+  @PostMapping("/login")
+  public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request, HttpServletRequest servletRequest) {
+    AuthRole role = request.getPortal();
+    if (!authService.authenticate(role, request.getUsername(), request.getPassword())) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorBody("Invalid username or password"));
+    }
+
+    HttpSession session = servletRequest.getSession(true);
+    session.setAttribute(AuthSession.ROLE, role.name());
+    session.setAttribute(AuthSession.USERNAME, request.getUsername());
+    return ResponseEntity.ok(LoginResponse.of(request.getUsername(), role));
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<Void> logout(HttpServletRequest request) {
+    HttpSession session = request.getSession(false);
+    if (session != null) {
+      session.invalidate();
+    }
+    return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/me")
+  public ResponseEntity<?> me(HttpServletRequest request) {
+    HttpSession session = request.getSession(false);
+    if (session == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorBody("Not authenticated"));
+    }
+
+    Object roleObj = session.getAttribute(AuthSession.ROLE);
+    Object usernameObj = session.getAttribute(AuthSession.USERNAME);
+    if (!(roleObj instanceof String roleValue) || !(usernameObj instanceof String usernameValue)) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorBody("Not authenticated"));
+    }
+
+    AuthRole role = AuthRole.valueOf(roleValue);
+    return ResponseEntity.ok(LoginResponse.of(usernameValue, role));
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ErrorBody> validationError(MethodArgumentNotValidException ex) {
+    var fieldError = ex.getBindingResult().getFieldErrors().stream().findFirst().orElse(null);
+    String message = (fieldError != null && fieldError.getDefaultMessage() != null)
+        ? fieldError.getDefaultMessage()
+        : "Validation failed";
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorBody(message));
+  }
+
+  public static class ErrorBody {
+    private final String message;
+
+    public ErrorBody(String message) {
+      this.message = message;
+    }
+
+    public String getMessage() {
+      return message;
+    }
+  }
+}

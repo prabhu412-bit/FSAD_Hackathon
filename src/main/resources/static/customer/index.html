@@ -1,233 +1,264 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SkyResolve — Submit a Case</title>
-  <meta name="description" content="Submit airline feedback or file a complaint. Real-time case tracking and fast resolution." />
+  <meta name="description"
+    content="Submit airline feedback or file a complaint. Real-time case tracking and fast resolution." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
+
 <body>
-<canvas id="particleCanvas"></canvas>
+  <canvas id="particleCanvas"></canvas>
 
 
-<!-- ═══ Top Bar ═══ -->
-<header class="topbar">
-  <div class="brand">
-    <div class="brand-mark" aria-hidden="true">
-      <i class="fa-solid fa-headset"></i>
-    </div>
-    <div>
-      <div class="brand-title">SkyResolve</div>
-      <div class="brand-subtitle">CUSTOMER SUPPORT PORTAL</div>
-    </div>
-  </div>
-  <div class="topbar-actions">
-    <button class="pill-btn" id="btnTheme" type="button" title="Toggle theme">
-      <i class="fa-solid fa-moon"></i>
-      Theme
-    </button>
-  </div>
-</header>
-
-<main class="container">
-  <!-- ═══ HERO ═══ -->
-  <section class="panel hero-section reveal" style="padding:36px;">
-    <div class="hero-top">
+  <!-- ═══ Top Bar ═══ -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <i class="fa-solid fa-headset"></i>
+      </div>
       <div>
-        <h1>We're here to help.</h1>
-        <p>
-          <span class="live-dot"></span>
-          Share your experience or report an issue — we categorize
-          and prioritize your case for the fastest possible resolution.
-        </p>
-      </div>
-      <div class="stats" style="max-width:360px;">
-        <div class="stat" style="text-align:center;">
-          <div class="stat-kpi" style="font-size:22px;"><i class="fa-solid fa-bolt" style="-webkit-text-fill-color:var(--neon-blue);font-size:20px;"></i></div>
-          <div class="stat-label">Instant Triage</div>
-        </div>
-        <div class="stat" style="text-align:center;">
-          <div class="stat-kpi" style="font-size:22px;"><i class="fa-solid fa-clock" style="-webkit-text-fill-color:var(--neon-purple);font-size:20px;"></i></div>
-          <div class="stat-label">24/48h SLA</div>
-        </div>
-        <div class="stat" style="text-align:center;">
-          <div class="stat-kpi" style="font-size:22px;"><i class="fa-solid fa-eye" style="-webkit-text-fill-color:var(--neon-emerald);font-size:20px;"></i></div>
-          <div class="stat-label">Live Tracking</div>
-        </div>
+        <div class="brand-title">SkyResolve</div>
+        <div class="brand-subtitle">CUSTOMER SUPPORT PORTAL</div>
       </div>
     </div>
-  </section>
-
-  <!-- ═══ TABS ═══ -->
-  <section class="panel nav-panel reveal" style="padding:10px 16px;">
-    <nav class="tabs" role="tablist">
-      <button class="tab active" data-tab="feedbackTab" type="button" role="tab" aria-selected="true">
-        <i class="fa-solid fa-comment-dots"></i> Share Feedback
+    <div class="topbar-actions">
+      <span class="pill-link" id="authUser" style="cursor:default;opacity:.92;">
+        <i class="fa-solid fa-user"></i>
+        Customer
+      </span>
+      <button class="pill-btn" id="btnLogout" type="button" title="Logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        Logout
       </button>
-      <button class="tab" data-tab="complaintTab" type="button" role="tab">
-        <i class="fa-solid fa-triangle-exclamation"></i> File Complaint
+      <button class="pill-btn" id="btnTheme" type="button" title="Toggle theme">
+        <i class="fa-solid fa-moon"></i>
+        Theme
       </button>
-      <button class="tab" data-tab="trackTab" type="button" role="tab">
-        <i class="fa-solid fa-magnifying-glass"></i> Track Case
-      </button>
-    </nav>
-  </section>
-
-  <!-- ═══ TAB CONTENT ═══ -->
-  <section class="panel reveal">
-    <!-- Feedback -->
-    <div id="feedbackTab" class="tab-panel">
-      <form id="feedbackForm" class="form-grid">
-        <h2><i class="fa-solid fa-paper-plane"></i> Submit Feedback</h2>
-        <div class="row"><label>Full name</label><input name="customerName" type="text" placeholder="e.g., Priya Nair" required /></div>
-        <div class="row"><label>Email address</label><input name="customerEmail" type="email" placeholder="e.g., priya@example.com" required /></div>
-        <div class="row"><label>Flight number</label><input name="flightNumber" type="text" placeholder="e.g., EK200" required /></div>
-        <div class="row"><label>Journey date</label><input name="journeyDate" type="date" required /></div>
-        <div class="row">
-          <label>Contact channel</label>
-          <select name="contactChannel" required>
-            <option value="web" selected>Web Portal</option>
-            <option value="app">Mobile App</option>
-            <option value="kiosk">Airport Kiosk</option>
-            <option value="call-center">Call Center</option>
-          </select>
-        </div>
-        <div class="row span-2">
-          <label>Your message</label>
-          <textarea name="message" rows="4" placeholder="Tell us about your experience — what went well or what we can improve..." required></textarea>
-        </div>
-        <div class="actions">
-          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-paper-plane"></i> Submit Feedback</button>
-          <button class="btn" id="resetFeedback" type="button"><i class="fa-solid fa-rotate-left"></i> Reset</button>
-        </div>
-      </form>
     </div>
+  </header>
 
-    <!-- Complaint -->
-    <div id="complaintTab" class="tab-panel hidden">
-      <form id="complaintForm" class="form-grid">
-        <h2><i class="fa-solid fa-circle-exclamation"></i> File a Complaint</h2>
-        <div class="row"><label>Full name</label><input name="customerName" type="text" placeholder="e.g., John Smith" required /></div>
-        <div class="row"><label>Email address</label><input name="customerEmail" type="email" placeholder="e.g., john@example.com" required /></div>
-        <div class="row"><label>Flight number</label><input name="flightNumber" type="text" placeholder="e.g., AA123" required /></div>
-        <div class="row"><label>Journey date</label><input name="journeyDate" type="date" required /></div>
-        <div class="row">
-          <label>Contact channel</label>
-          <select name="contactChannel" required>
-            <option value="web">Web Portal</option>
-            <option value="app" selected>Mobile App</option>
-            <option value="kiosk">Airport Kiosk</option>
-            <option value="call-center">Call Center</option>
-          </select>
-        </div>
-        <div class="row span-2">
-          <label>Describe the issue</label>
-          <textarea name="message" rows="4" placeholder="Describe delays, baggage problems, billing issues, or staff behavior..." required></textarea>
-        </div>
-        <div class="actions">
-          <button class="btn btn-danger" type="submit"><i class="fa-solid fa-triangle-exclamation"></i> Submit Complaint</button>
-          <button class="btn" id="resetComplaint" type="button"><i class="fa-solid fa-rotate-left"></i> Reset</button>
-        </div>
-      </form>
-    </div>
-
-    <!-- Track -->
-    <div id="trackTab" class="tab-panel hidden">
-      <div class="split">
+  <main class="container">
+    <!-- ═══ HERO ═══ -->
+    <section class="panel hero-section reveal" style="padding:36px;">
+      <div class="hero-top">
         <div>
-          <h2><i class="fa-solid fa-location-dot"></i> Track Your Case</h2>
-          <div class="card" style="margin-top:14px;">
-            <div class="radio-row">
-              <label class="radio"><input type="radio" name="trackMode" value="ticket" checked /> Ticket number</label>
-              <label class="radio"><input type="radio" name="trackMode" value="email" /> Email lookup</label>
-            </div>
-            <div id="trackTicketArea">
-              <label>Ticket number</label>
-              <input id="trackTicketNumber" type="text" placeholder="e.g., AIR-20260325-00001" />
-              <button class="btn btn-primary" id="btnLookup" type="button" style="margin-top:12px;">
-                <i class="fa-solid fa-magnifying-glass"></i> Lookup
-              </button>
-            </div>
-            <div id="trackEmailArea" class="hidden">
-              <label>Email address</label>
-              <input id="trackEmail" type="email" placeholder="e.g., john@example.com" />
-              <div class="inline" style="margin-top:12px;">
-                <div><label>Limit</label><input id="trackLimit" type="number" min="1" max="25" value="10" /></div>
-                <div class="align-end">
-                  <button class="btn btn-primary" id="btnLookupEmail" type="button"><i class="fa-solid fa-list"></i> Load cases</button>
+          <h1>We're here to help.</h1>
+          <p>
+            <span class="live-dot"></span>
+            Share your experience or report an issue — we categorize
+            and prioritize your case for the fastest possible resolution.
+          </p>
+        </div>
+        <div class="stats" style="max-width:360px;">
+          <div class="stat" style="text-align:center;">
+            <div class="stat-kpi" style="font-size:22px;"><i class="fa-solid fa-bolt"
+                style="-webkit-text-fill-color:var(--neon-blue);font-size:20px;"></i></div>
+            <div class="stat-label">Instant Triage</div>
+          </div>
+          <div class="stat" style="text-align:center;">
+            <div class="stat-kpi" style="font-size:22px;"><i class="fa-solid fa-clock"
+                style="-webkit-text-fill-color:var(--neon-purple);font-size:20px;"></i></div>
+            <div class="stat-label">24/48h SLA</div>
+          </div>
+          <div class="stat" style="text-align:center;">
+            <div class="stat-kpi" style="font-size:22px;"><i class="fa-solid fa-eye"
+                style="-webkit-text-fill-color:var(--neon-emerald);font-size:20px;"></i></div>
+            <div class="stat-label">Live Tracking</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ TABS ═══ -->
+    <section class="panel nav-panel reveal" style="padding:10px 16px;">
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="feedbackTab" type="button" role="tab" aria-selected="true">
+          <i class="fa-solid fa-comment-dots"></i> Share Feedback
+        </button>
+        <button class="tab" data-tab="complaintTab" type="button" role="tab">
+          <i class="fa-solid fa-triangle-exclamation"></i> File Complaint
+        </button>
+        <button class="tab" data-tab="trackTab" type="button" role="tab">
+          <i class="fa-solid fa-magnifying-glass"></i> Track Case
+        </button>
+      </nav>
+    </section>
+
+    <!-- ═══ TAB CONTENT ═══ -->
+    <section class="panel reveal">
+      <!-- Feedback -->
+      <div id="feedbackTab" class="tab-panel">
+        <form id="feedbackForm" class="form-grid">
+          <h2><i class="fa-solid fa-paper-plane"></i> Submit Feedback</h2>
+          <div class="row"><label>Full name</label><input name="customerName" type="text" placeholder="e.g., Priya Nair"
+              required /></div>
+          <div class="row"><label>Email address</label><input name="customerEmail" type="email"
+              placeholder="e.g., priya@example.com" required /></div>
+          <div class="row"><label>Flight number</label><input name="flightNumber" type="text" placeholder="e.g., EK200"
+              required /></div>
+          <div class="row"><label>Journey date</label><input name="journeyDate" type="date" required /></div>
+          <div class="row">
+            <label>Contact channel</label>
+            <select name="contactChannel" required>
+              <option value="web" selected>Web Portal</option>
+              <option value="app">Mobile App</option>
+              <option value="kiosk">Airport Kiosk</option>
+              <option value="call-center">Call Center</option>
+            </select>
+          </div>
+          <div class="row span-2">
+            <label>Your message</label>
+            <textarea name="message" rows="4"
+              placeholder="Tell us about your experience — what went well or what we can improve..."
+              required></textarea>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-paper-plane"></i> Submit
+              Feedback</button>
+            <button class="btn" id="resetFeedback" type="button"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Complaint -->
+      <div id="complaintTab" class="tab-panel hidden">
+        <form id="complaintForm" class="form-grid">
+          <h2><i class="fa-solid fa-circle-exclamation"></i> File a Complaint</h2>
+          <div class="row"><label>Full name</label><input name="customerName" type="text" placeholder="e.g., John Smith"
+              required /></div>
+          <div class="row"><label>Email address</label><input name="customerEmail" type="email"
+              placeholder="e.g., john@example.com" required /></div>
+          <div class="row"><label>Flight number</label><input name="flightNumber" type="text" placeholder="e.g., AA123"
+              required /></div>
+          <div class="row"><label>Journey date</label><input name="journeyDate" type="date" required /></div>
+          <div class="row">
+            <label>Contact channel</label>
+            <select name="contactChannel" required>
+              <option value="web">Web Portal</option>
+              <option value="app" selected>Mobile App</option>
+              <option value="kiosk">Airport Kiosk</option>
+              <option value="call-center">Call Center</option>
+            </select>
+          </div>
+          <div class="row span-2">
+            <label>Describe the issue</label>
+            <textarea name="message" rows="4"
+              placeholder="Describe delays, baggage problems, billing issues, or staff behavior..." required></textarea>
+          </div>
+          <div class="actions">
+            <button class="btn btn-danger" type="submit"><i class="fa-solid fa-triangle-exclamation"></i> Submit
+              Complaint</button>
+            <button class="btn" id="resetComplaint" type="button"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Track -->
+      <div id="trackTab" class="tab-panel hidden">
+        <div class="split">
+          <div>
+            <h2><i class="fa-solid fa-location-dot"></i> Track Your Case</h2>
+            <div class="card" style="margin-top:14px;">
+              <div class="radio-row">
+                <label class="radio"><input type="radio" name="trackMode" value="ticket" checked /> Ticket
+                  number</label>
+                <label class="radio"><input type="radio" name="trackMode" value="email" /> Email lookup</label>
+              </div>
+              <div id="trackTicketArea">
+                <label>Ticket number</label>
+                <input id="trackTicketNumber" type="text" placeholder="e.g., AIR-20260325-00001" />
+                <button class="btn btn-primary" id="btnLookup" type="button" style="margin-top:12px;">
+                  <i class="fa-solid fa-magnifying-glass"></i> Lookup
+                </button>
+              </div>
+              <div id="trackEmailArea" class="hidden">
+                <label>Email address</label>
+                <input id="trackEmail" type="email" placeholder="e.g., john@example.com" />
+                <div class="inline" style="margin-top:12px;">
+                  <div><label>Limit</label><input id="trackLimit" type="number" min="1" max="25" value="10" /></div>
+                  <div class="align-end">
+                    <button class="btn btn-primary" id="btnLookupEmail" type="button"><i class="fa-solid fa-list"></i>
+                      Load cases</button>
+                  </div>
                 </div>
               </div>
             </div>
+            <div class="muted" style="margin-top:12px;">
+              <i class="fa-solid fa-lightbulb" style="color:var(--neon-amber);"></i>
+              Use the ticket number or email from your confirmation.
+            </div>
           </div>
-          <div class="muted" style="margin-top:12px;">
-            <i class="fa-solid fa-lightbulb" style="color:var(--neon-amber);"></i>
-            Use the ticket number or email from your confirmation.
+          <div>
+            <h2><i class="fa-solid fa-diagram-project"></i> Case Results</h2>
+            <div id="caseResults" class="results" style="margin-top:14px;"></div>
           </div>
-        </div>
-        <div>
-          <h2><i class="fa-solid fa-diagram-project"></i> Case Results</h2>
-          <div id="caseResults" class="results" style="margin-top:14px;"></div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <footer class="footer">
-    <span style="opacity:.5;">SkyResolve</span>&nbsp;·&nbsp;Your feedback matters&nbsp;·&nbsp;<span style="opacity:.4;">2026</span>
-  </footer>
-</main>
+    <footer class="footer">
+      <span style="opacity:.5;">SkyResolve</span>&nbsp;·&nbsp;Your feedback matters&nbsp;·&nbsp;<span
+        style="opacity:.4;">2026</span>
+    </footer>
+  </main>
 
-<div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
-<script>
-(function(){
-  const c = document.getElementById('particleCanvas');
-  if(!c) return;
-  const ctx = c.getContext('2d');
-  let w, h, pts = [], mouse = {x:-9999, y:-9999};
-  const N = 70, D = 150;
-  function resize(){ w = c.width = innerWidth; h = c.height = innerHeight; }
-  function mkPt(){ return { x: Math.random()*w, y: Math.random()*h, vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35, r: Math.random()*1.8+.5, a: Math.random()*.45+.12 }; }
-  function init(){ resize(); pts = []; for(let i=0;i<N;i++) pts.push(mkPt()); }
-  function frame(){
-    ctx.clearRect(0,0,w,h);
-    for(let i=0;i<pts.length;i++){
-      for(let j=i+1;j<pts.length;j++){
-        const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y, d=Math.sqrt(dx*dx+dy*dy);
-        if(d<D){
-          const a=(1-d/D)*.12;
-          ctx.beginPath(); ctx.strokeStyle = `rgba(168,85,247,${a})`; ctx.lineWidth=.5;
-          ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y); ctx.stroke();
+  <script>
+    (function () {
+      const c = document.getElementById('particleCanvas');
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      let w, h, pts = [], mouse = { x: -9999, y: -9999 };
+      const N = 70, D = 150;
+      function resize() { w = c.width = innerWidth; h = c.height = innerHeight; }
+      function mkPt() { return { x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - .5) * .35, vy: (Math.random() - .5) * .35, r: Math.random() * 1.8 + .5, a: Math.random() * .45 + .12 }; }
+      function init() { resize(); pts = []; for (let i = 0; i < N; i++) pts.push(mkPt()); }
+      function frame() {
+        ctx.clearRect(0, 0, w, h);
+        for (let i = 0; i < pts.length; i++) {
+          for (let j = i + 1; j < pts.length; j++) {
+            const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y, d = Math.sqrt(dx * dx + dy * dy);
+            if (d < D) {
+              const a = (1 - d / D) * .12;
+              ctx.beginPath(); ctx.strokeStyle = `rgba(168,85,247,${a})`; ctx.lineWidth = .5;
+              ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke();
+            }
+          }
         }
+        for (const p of pts) {
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(168,85,247,${p.a})`; ctx.fill();
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > w) p.vx *= -1;
+          if (p.y < 0 || p.y > h) p.vy *= -1;
+          const dx = p.x - mouse.x, dy = p.y - mouse.y, dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) { p.x += dx * .008; p.y += dy * .008; }
+        }
+        requestAnimationFrame(frame);
       }
-    }
-    for(const p of pts){
-      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle = `rgba(168,85,247,${p.a})`; ctx.fill();
-      p.x+=p.vx; p.y+=p.vy;
-      if(p.x<0||p.x>w) p.vx*=-1;
-      if(p.y<0||p.y>h) p.vy*=-1;
-      const dx=p.x-mouse.x, dy=p.y-mouse.y, dist=Math.sqrt(dx*dx+dy*dy);
-      if(dist<120){ p.x+=dx*.008; p.y+=dy*.008; }
-    }
-    requestAnimationFrame(frame);
-  }
-  addEventListener('resize', resize);
-  addEventListener('mousemove', e=>{ mouse.x=e.clientX; mouse.y=e.clientY; });
-  init(); frame();
-})();
-(function(){
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
-  }, { threshold: 0.06 });
-  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
-})();
-</script>
-<script src="/customer/customer-app.js"></script>
+      addEventListener('resize', resize);
+      addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+      init(); frame();
+    })();
+    (function () {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+      }, { threshold: 0.06 });
+      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    })();
+  </script>
+  <script src="/customer/customer-app.js"></script>
 </body>
+
 </html>

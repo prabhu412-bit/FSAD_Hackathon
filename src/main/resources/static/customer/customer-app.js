@@ -1,7 +1,11 @@
 const API_BASE = "/api";
 
-function qs(sel) { return document.querySelector(sel); }
-function qsa(sel) { return Array.from(document.querySelectorAll(sel)); }
+function qs(sel) {
+  return document.querySelector(sel);
+}
+function qsa(sel) {
+  return Array.from(document.querySelectorAll(sel));
+}
 
 function toast(title, message, kind = "info") {
   const container = qs("#toastContainer");
@@ -32,7 +36,8 @@ function setLoading(btn, isLoading) {
   const icon = btn.querySelector("i");
   if (isLoading && icon) icon.className = "fa-solid fa-spinner fa-spin";
   if (!isLoading && icon) {
-    if (icon.className.includes("fa-spin")) icon.className = "fa-solid fa-paper-plane";
+    if (icon.className.includes("fa-spin"))
+      icon.className = "fa-solid fa-paper-plane";
   }
 }
 
@@ -59,22 +64,21 @@ function badgeForPriority(priority) {
   return { cls: "good", label: "Low" };
 }
 
-
 function setTab(tabId) {
-  qsa(".tab").forEach(btn => {
+  qsa(".tab").forEach((btn) => {
     const is = btn.dataset.tab === tabId;
     btn.classList.toggle("active", is);
     btn.setAttribute("aria-selected", is ? "true" : "false");
   });
 
-  qsa(".tab-panel").forEach(panel => {
+  qsa(".tab-panel").forEach((panel) => {
     panel.classList.add("hidden");
     if (panel.id === tabId) panel.classList.remove("hidden");
   });
 }
 
 function connectTabs() {
-  qsa(".tab").forEach(btn => {
+  qsa(".tab").forEach((btn) => {
     btn.addEventListener("click", () => setTab(btn.dataset.tab));
   });
 }
@@ -93,7 +97,7 @@ function renderTimeline(container, status) {
     { key: "SUBMITTED", name: "Submitted", sub: "Case created + auto triage" },
     { key: "TRIAGED", name: "Triaged", sub: "Category + priority set" },
     { key: "IN_PROGRESS", name: "In Progress", sub: "Agent working on it" },
-    { key: "RESOLVED", name: "Resolved", sub: "Resolution shared" }
+    { key: "RESOLVED", name: "Resolved", sub: "Resolution shared" },
   ];
 
   for (let i = 0; i < steps.length; i++) {
@@ -151,7 +155,9 @@ function renderCaseCard(c) {
 
   const ageH = c.createdAt ? hoursBetween(c.createdAt) : 0;
   const slaH = slaDeadlineHours(c.type);
-  const progress = resolved ? 100 : Math.round(Math.min(100, (ageH / slaH) * 100));
+  const progress = resolved
+    ? 100
+    : Math.round(Math.min(100, (ageH / slaH) * 100));
   const overdue = !resolved && ageH > slaH;
 
   const slaHtml = `
@@ -202,19 +208,26 @@ function renderCaseCard(c) {
     ${body}
   `;
 
-  setTimeout(() => renderTimeline(node.querySelector(`#timeline-${c.id}`), c.status), 0);
+  setTimeout(
+    () => renderTimeline(node.querySelector(`#timeline-${c.id}`), c.status),
+    0,
+  );
   return node;
 }
 
 async function lookupByTicket(ticketNumber) {
-  const res = await fetch(`${API_BASE}/cases/lookup?ticketNumber=${encodeURIComponent(ticketNumber)}`);
+  const res = await fetch(
+    `${API_BASE}/cases/lookup?ticketNumber=${encodeURIComponent(ticketNumber)}`,
+  );
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Lookup failed");
   return data;
 }
 
 async function lookupByEmail(email, limit) {
-  const res = await fetch(`${API_BASE}/cases/my?email=${encodeURIComponent(email)}&limit=${encodeURIComponent(limit)}`);
+  const res = await fetch(
+    `${API_BASE}/cases/my?email=${encodeURIComponent(email)}&limit=${encodeURIComponent(limit)}`,
+  );
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Lookup failed");
   return data;
@@ -224,9 +237,9 @@ function connectTrack() {
   const ticketArea = qs("#trackTicketArea");
   const emailArea = qs("#trackEmailArea");
 
-  qsa("input[name='trackMode']").forEach(r => {
+  qsa("input[name='trackMode']").forEach((r) => {
     r.addEventListener("change", () => {
-      const mode = qsa("input[name='trackMode']").find(x => x.checked).value;
+      const mode = qsa("input[name='trackMode']").find((x) => x.checked).value;
       ticketArea && ticketArea.classList.toggle("hidden", mode !== "ticket");
       emailArea && emailArea.classList.toggle("hidden", mode !== "email");
     });
@@ -234,7 +247,8 @@ function connectTrack() {
 
   qs("#btnLookup")?.addEventListener("click", async () => {
     const ticketNumber = qs("#trackTicketNumber").value.trim();
-    if (!ticketNumber) return toast("Missing ticket", "Enter a ticket number.", "error");
+    if (!ticketNumber)
+      return toast("Missing ticket", "Enter a ticket number.", "error");
     try {
       toast("Loading case...", ticketNumber);
       const c = await lookupByTicket(ticketNumber);
@@ -292,7 +306,7 @@ function connectDefaultDates() {
   const dd = String(today.getDate()).padStart(2, "0");
   const iso = `${yyyy}-${mm}-${dd}`;
 
-  qsa("input[name='journeyDate']").forEach(el => {
+  qsa("input[name='journeyDate']").forEach((el) => {
     if (!el.value) el.value = iso;
   });
 }
@@ -313,6 +327,43 @@ function connectThemeToggle() {
   });
 }
 
+async function ensureCustomerSession() {
+  try {
+    const res = await fetch(`${API_BASE}/auth/me`);
+    if (!res.ok) {
+      location.href = "/customer/login.html";
+      return false;
+    }
+
+    const me = await res.json();
+    if (me.role !== "CUSTOMER") {
+      location.href = me.role === "ADMIN" ? "/" : "/customer/login.html";
+      return false;
+    }
+
+    const userTag = qs("#authUser");
+    if (userTag) {
+      userTag.innerHTML = `<i class="fa-solid fa-user"></i> ${escapeHtml(me.username || "Customer")}`;
+    }
+    return true;
+  } catch {
+    location.href = "/customer/login.html";
+    return false;
+  }
+}
+
+function connectLogout(redirectPath) {
+  const btn = qs("#btnLogout");
+  if (!btn) return;
+  btn.addEventListener("click", async () => {
+    try {
+      await fetch(`${API_BASE}/auth/logout`, { method: "POST" });
+    } finally {
+      location.href = redirectPath;
+    }
+  });
+}
+
 async function handleCreateCase(form, endpoint, kindLabel) {
   const btn = form.querySelector('button[type="submit"]');
   setLoading(btn, true);
@@ -326,12 +377,17 @@ async function handleCreateCase(form, endpoint, kindLabel) {
     const res = await fetch(API_BASE + endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || `${kindLabel} submission failed`);
+    if (!res.ok)
+      throw new Error(data.message || `${kindLabel} submission failed`);
 
-    toast("Submitted", `${kindLabel} created. Ticket: ${data.ticketNumber}`, "success");
+    toast(
+      "Submitted",
+      `${kindLabel} created. Ticket: ${data.ticketNumber}`,
+      "success",
+    );
   } catch (e) {
     toast("Submission failed", e.message || String(e), "error");
   } finally {
@@ -339,9 +395,13 @@ async function handleCreateCase(form, endpoint, kindLabel) {
   }
 }
 
-function init() {
+async function init() {
+  const allowed = await ensureCustomerSession();
+  if (!allowed) return;
+
   connectTabs();
   connectThemeToggle();
+  connectLogout("/customer/login.html");
   connectResetButtons();
   connectDefaultDates();
   connectTrack();
@@ -365,4 +425,3 @@ function init() {
 }
 
 init();
-

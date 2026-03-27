@@ -1,7 +1,11 @@
 const API_BASE = "/api";
 
-function qs(sel) { return document.querySelector(sel); }
-function qsa(sel) { return Array.from(document.querySelectorAll(sel)); }
+function qs(sel) {
+  return document.querySelector(sel);
+}
+function qsa(sel) {
+  return Array.from(document.querySelectorAll(sel));
+}
 
 function toast(title, message, kind = "info") {
   const container = qs("#toastContainer");
@@ -33,7 +37,8 @@ function setLoading(btn, isLoading) {
   if (isLoading && icon) icon.className = "fa-solid fa-spinner fa-spin";
   if (!isLoading && icon) {
     // Keep whatever original icon was; fallback
-    if (icon.className.includes("fa-spin")) icon.className = "fa-solid fa-paper-plane";
+    if (icon.className.includes("fa-spin"))
+      icon.className = "fa-solid fa-paper-plane";
   }
 }
 
@@ -50,7 +55,7 @@ function renderTimeline(container, status) {
     { key: "SUBMITTED", name: "Submitted", sub: "Case created + auto triage" },
     { key: "TRIAGED", name: "Triaged", sub: "Category + priority set" },
     { key: "IN_PROGRESS", name: "In Progress", sub: "Agent working on it" },
-    { key: "RESOLVED", name: "Resolved", sub: "Resolution shared" }
+    { key: "RESOLVED", name: "Resolved", sub: "Resolution shared" },
   ];
 
   for (let i = 0; i < steps.length; i++) {
@@ -73,9 +78,11 @@ function priorityStars(priority) {
   const p = Number(priority || 1);
   const max = 5;
   const count = Math.min(max, Math.max(1, p));
-  return Array.from({ length: max }, (_, i) => i < count ? "on" : "").map((cls, idx) => {
-    return `<span class="star ${cls}" title="Priority level ${count}">${""}</span>`;
-  }).join("");
+  return Array.from({ length: max }, (_, i) => (i < count ? "on" : ""))
+    .map((cls, idx) => {
+      return `<span class="star ${cls}" title="Priority level ${count}">${""}</span>`;
+    })
+    .join("");
 }
 
 function badgeForPriority(priority) {
@@ -123,7 +130,9 @@ function renderCaseCard(c) {
 
   const ageH = c.createdAt ? hoursBetween(c.createdAt) : 0;
   const slaH = slaDeadlineHours(c.type);
-  const progress = resolved ? 100 : Math.round(Math.min(100, (ageH / slaH) * 100));
+  const progress = resolved
+    ? 100
+    : Math.round(Math.min(100, (ageH / slaH) * 100));
   const overdue = !resolved && ageH > slaH;
 
   const slaHtml = `
@@ -185,7 +194,10 @@ function renderCaseCard(c) {
   `;
 
   // Render timeline after node is in DOM
-  setTimeout(() => renderTimeline(node.querySelector(`#timeline-${c.id}`), c.status), 0);
+  setTimeout(
+    () => renderTimeline(node.querySelector(`#timeline-${c.id}`), c.status),
+    0,
+  );
   return node;
 }
 
@@ -199,13 +211,13 @@ function readForm(form) {
 }
 
 function setTab(tabId) {
-  qsa(".tab").forEach(btn => {
+  qsa(".tab").forEach((btn) => {
     const is = btn.dataset.tab === tabId;
     btn.classList.toggle("active", is);
     btn.setAttribute("aria-selected", is ? "true" : "false");
   });
 
-  qsa(".tab-panel").forEach(panel => {
+  qsa(".tab-panel").forEach((panel) => {
     panel.classList.add("hidden");
     if (panel.id === tabId) panel.classList.remove("hidden");
   });
@@ -219,7 +231,7 @@ function setTab(tabId) {
 }
 
 function connectTabs() {
-  qsa(".tab").forEach(btn => {
+  qsa(".tab").forEach((btn) => {
     btn.addEventListener("click", () => {
       const tabId = btn.dataset.tab;
       setTab(tabId);
@@ -251,7 +263,8 @@ async function loadAnalytics(force = false) {
   try {
     const sRes = await fetch(`${API_BASE}/analytics/summary`);
     const summary = await sRes.json();
-    if (!sRes.ok) throw new Error(summary.message || "Analytics summary failed");
+    if (!sRes.ok)
+      throw new Error(summary.message || "Analytics summary failed");
 
     qs("#analyticsTotal").textContent = summary.totalCases ?? 0;
     qs("#analyticsFeedback").textContent = summary.feedbackCount ?? 0;
@@ -265,9 +278,11 @@ async function loadAnalytics(force = false) {
     const recent = await rRes.json();
     if (!rRes.ok) throw new Error(recent.message || "Analytics recent failed");
 
-    const complaints = (recent || []).filter(x => x.type === "COMPLAINT");
-    const feedback = (recent || []).filter(x => x.type === "FEEDBACK");
-    complaints.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    const complaints = (recent || []).filter((x) => x.type === "COMPLAINT");
+    const feedback = (recent || []).filter((x) => x.type === "FEEDBACK");
+    complaints.sort(
+      (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+    );
 
     complaintsFullList.innerHTML = "";
     if (!complaints.length) {
@@ -296,7 +311,9 @@ async function loadAnalytics(force = false) {
       }
     }
 
-    const feedbackSorted = [...feedback].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    const feedbackSorted = [...feedback].sort(
+      (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+    );
     feedbackFullList.innerHTML = "";
     if (!feedbackSorted.length) {
       feedbackFullList.innerHTML = `<div class="complaint-item"><div class="meta">No feedback yet.</div></div>`;
@@ -338,7 +355,7 @@ async function handleCreateCase(form, endpoint) {
     const res = await fetch(API_BASE + endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Request failed");
@@ -380,14 +397,18 @@ function renderCaseResults(cases, enableCsv = false) {
 }
 
 async function lookupByTicket(ticketNumber) {
-  const res = await fetch(`${API_BASE}/cases/lookup?ticketNumber=${encodeURIComponent(ticketNumber)}`);
+  const res = await fetch(
+    `${API_BASE}/cases/lookup?ticketNumber=${encodeURIComponent(ticketNumber)}`,
+  );
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Lookup failed");
   return data;
 }
 
 async function lookupByEmail(email, limit) {
-  const res = await fetch(`${API_BASE}/cases/my?email=${encodeURIComponent(email)}&limit=${encodeURIComponent(limit)}`);
+  const res = await fetch(
+    `${API_BASE}/cases/my?email=${encodeURIComponent(email)}&limit=${encodeURIComponent(limit)}`,
+  );
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Lookup failed");
   return data;
@@ -396,9 +417,9 @@ async function lookupByEmail(email, limit) {
 function trackToggle() {
   const ticketArea = qs("#trackTicketArea");
   const emailArea = qs("#trackEmailArea");
-  qsa("input[name='trackMode']").forEach(r => {
+  qsa("input[name='trackMode']").forEach((r) => {
     r.addEventListener("change", () => {
-      const mode = qsa("input[name='trackMode']").find(x => x.checked).value;
+      const mode = qsa("input[name='trackMode']").find((x) => x.checked).value;
       ticketArea.classList.toggle("hidden", mode !== "ticket");
       emailArea.classList.toggle("hidden", mode !== "email");
     });
@@ -422,7 +443,7 @@ function toCsv(cases) {
     "assignedAgent",
     "createdAt",
     "resolvedAt",
-    "resolutionText"
+    "resolutionText",
   ];
   const escape = (v) => {
     const s = v == null ? "" : String(v);
@@ -430,7 +451,7 @@ function toCsv(cases) {
     const val = s.replaceAll('"', '""');
     return withQuotes ? `"${val}"` : val;
   };
-  const rows = cases.map(c => headers.map(h => escape(c[h])).join(","));
+  const rows = cases.map((c) => headers.map((h) => escape(c[h])).join(","));
   return [headers.join(","), ...rows].join("\n");
 }
 
@@ -449,7 +470,8 @@ function downloadText(filename, text, mime) {
 function connectTrack() {
   qs("#btnLookup").addEventListener("click", async () => {
     const ticketNumber = qs("#trackTicketNumber").value.trim();
-    if (!ticketNumber) return toast("Missing ticket", "Enter a ticket number.", "error");
+    if (!ticketNumber)
+      return toast("Missing ticket", "Enter a ticket number.", "error");
     try {
       toast("Loading case...", ticketNumber);
       const c = await lookupByTicket(ticketNumber);
@@ -490,14 +512,19 @@ function connectAdmin() {
 
     const payload = readForm(form);
     const ticketNumber = payload.ticketNumber?.trim();
-    if (!ticketNumber) return toast("Missing ticket number", "Enter a ticket number.", "error");
+    if (!ticketNumber)
+      return toast("Missing ticket number", "Enter a ticket number.", "error");
 
     const newStatus = payload.status;
     const assignedAgent = payload.assignedAgent;
     const resolutionText = payload.resolutionText || "";
 
     if (newStatus === "RESOLVED" && !resolutionText.trim()) {
-      return toast("Resolution required", "Resolution note is required when status is RESOLVED.", "error");
+      return toast(
+        "Resolution required",
+        "Resolution note is required when status is RESOLVED.",
+        "error",
+      );
     }
 
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -506,28 +533,40 @@ function connectAdmin() {
       const found = await lookupByTicket(ticketNumber);
       let updated = found;
 
-      const patchRes = await fetch(`${API_BASE}/cases/${encodeURIComponent(found.id)}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus, assignedAgent })
-      });
+      const patchRes = await fetch(
+        `${API_BASE}/cases/${encodeURIComponent(found.id)}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus, assignedAgent }),
+        },
+      );
       const patchData = await patchRes.json();
-      if (!patchRes.ok) throw new Error(patchData.message || "Status update failed");
+      if (!patchRes.ok)
+        throw new Error(patchData.message || "Status update failed");
       updated = patchData;
 
       if (newStatus === "RESOLVED") {
-        const resRes = await fetch(`${API_BASE}/cases/${encodeURIComponent(found.id)}/resolution`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ resolutionText })
-        });
+        const resRes = await fetch(
+          `${API_BASE}/cases/${encodeURIComponent(found.id)}/resolution`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ resolutionText }),
+          },
+        );
         const resData = await resRes.json();
-        if (!resRes.ok) throw new Error(resData.message || "Resolution update failed");
+        if (!resRes.ok)
+          throw new Error(resData.message || "Resolution update failed");
         updated = resData;
       }
 
       preview.appendChild(renderCaseCard(updated));
-      toast("Update applied", `Ticket ${updated.ticketNumber} updated.`, "success");
+      toast(
+        "Update applied",
+        `Ticket ${updated.ticketNumber} updated.`,
+        "success",
+      );
       loadKpis();
     } catch (e) {
       toast("Update failed", e.message || String(e), "error");
@@ -576,19 +615,16 @@ function renderTypePieChart(typeCounts) {
   if (!canvas) return;
 
   const labels = ["Feedback", "Complaints"];
-  const keys   = ["FEEDBACK", "COMPLAINT"];
+  const keys = ["FEEDBACK", "COMPLAINT"];
   const colors = [
-    "rgba(96,  165, 250, 0.88)",   // blue
-    "rgba(251, 113, 133, 0.88)"    // rose
+    "rgba(96,  165, 250, 0.88)", // blue
+    "rgba(251, 113, 133, 0.88)", // rose
   ];
-  const borders = [
-    "rgba(96,  165, 250, 1)",
-    "rgba(251, 113, 133, 1)"
-  ];
+  const borders = ["rgba(96,  165, 250, 1)", "rgba(251, 113, 133, 1)"];
 
-  const raw   = keys.map(k => typeCounts[k] ?? 0);
+  const raw = keys.map((k) => typeCounts[k] ?? 0);
   const total = raw.reduce((a, b) => a + b, 0);
-  const data  = total === 0 ? [1, 1] : raw;
+  const data = total === 0 ? [1, 1] : raw;
 
   if (typePieChartInstance) {
     typePieChartInstance.data.datasets[0].data = data;
@@ -602,13 +638,15 @@ function renderTypePieChart(typeCounts) {
     type: "doughnut",
     data: {
       labels,
-      datasets: [{
-        data,
-        backgroundColor: colors,
-        borderColor: borders,
-        borderWidth: 2,
-        hoverOffset: 14
-      }]
+      datasets: [
+        {
+          data,
+          backgroundColor: colors,
+          borderColor: borders,
+          borderWidth: 2,
+          hoverOffset: 14,
+        },
+      ],
     },
     options: {
       responsive: false,
@@ -620,17 +658,20 @@ function renderTypePieChart(typeCounts) {
             color: "rgba(255,255,255,0.80)",
             font: { size: 12 },
             padding: 12,
-            boxWidth: 14
-          }
+            boxWidth: 14,
+          },
         },
         tooltip: {
           callbacks: {
             label: (ctx) => {
               const val = total === 0 ? 0 : raw[ctx.dataIndex];
-              const pct = total === 0 ? 50 : Math.round((raw[ctx.dataIndex] / total) * 100);
+              const pct =
+                total === 0
+                  ? 50
+                  : Math.round((raw[ctx.dataIndex] / total) * 100);
               return ` ${ctx.label}: ${val} (${pct}%)`;
-            }
-          }
+            },
+          },
         },
         datalabels: {
           color: "#fff",
@@ -639,11 +680,11 @@ function renderTypePieChart(typeCounts) {
             if (total === 0) return "";
             const pct = Math.round((raw[ctx.dataIndex] / total) * 100);
             return pct >= 7 ? pct + "%" : "";
-          }
-        }
-      }
+          },
+        },
+      },
     },
-    plugins: [ChartDataLabels]
+    plugins: [ChartDataLabels],
   });
 }
 
@@ -651,26 +692,32 @@ function renderCategoryPieChart(categoryCounts) {
   const canvas = qs("#caseCategoryPieChart");
   if (!canvas) return;
 
-  const labels = ["Flight Disruption", "Baggage/Handling", "Billing/Refund", "Service Quality", "General Feedback"];
-  const keys   = labels; // category names are the keys themselves
+  const labels = [
+    "Flight Disruption",
+    "Baggage/Handling",
+    "Billing/Refund",
+    "Service Quality",
+    "General Feedback",
+  ];
+  const keys = labels; // category names are the keys themselves
   const colors = [
-    "rgba(251, 191,  36, 0.88)",   // amber   – Flight Disruption
-    "rgba(167, 139, 250, 0.88)",   // purple  – Baggage/Handling
-    "rgba( 52, 211, 153, 0.88)",   // emerald – Billing/Refund
-    "rgba( 56, 189, 248, 0.88)",   // sky     – Service Quality
-    "rgba(251, 146, 60,  0.88)"    // orange  – General Feedback
+    "rgba(251, 191,  36, 0.88)", // amber   – Flight Disruption
+    "rgba(167, 139, 250, 0.88)", // purple  – Baggage/Handling
+    "rgba( 52, 211, 153, 0.88)", // emerald – Billing/Refund
+    "rgba( 56, 189, 248, 0.88)", // sky     – Service Quality
+    "rgba(251, 146, 60,  0.88)", // orange  – General Feedback
   ];
   const borders = [
     "rgba(251, 191,  36, 1)",
     "rgba(167, 139, 250, 1)",
     "rgba( 52, 211, 153, 1)",
     "rgba( 56, 189, 248, 1)",
-    "rgba(251, 146, 60,  1)"
+    "rgba(251, 146, 60,  1)",
   ];
 
-  const raw   = keys.map(k => categoryCounts[k] ?? 0);
+  const raw = keys.map((k) => categoryCounts[k] ?? 0);
   const total = raw.reduce((a, b) => a + b, 0);
-  const data  = total === 0 ? [1, 1, 1, 1, 1] : raw;
+  const data = total === 0 ? [1, 1, 1, 1, 1] : raw;
 
   if (categoryPieChartInstance) {
     categoryPieChartInstance.data.datasets[0].data = data;
@@ -684,13 +731,15 @@ function renderCategoryPieChart(categoryCounts) {
     type: "doughnut",
     data: {
       labels,
-      datasets: [{
-        data,
-        backgroundColor: colors,
-        borderColor: borders,
-        borderWidth: 2,
-        hoverOffset: 14
-      }]
+      datasets: [
+        {
+          data,
+          backgroundColor: colors,
+          borderColor: borders,
+          borderWidth: 2,
+          hoverOffset: 14,
+        },
+      ],
     },
     options: {
       responsive: false,
@@ -702,17 +751,20 @@ function renderCategoryPieChart(categoryCounts) {
             color: "rgba(255,255,255,0.80)",
             font: { size: 11 },
             padding: 10,
-            boxWidth: 12
-          }
+            boxWidth: 12,
+          },
         },
         tooltip: {
           callbacks: {
             label: (ctx) => {
               const val = total === 0 ? 0 : raw[ctx.dataIndex];
-              const pct = total === 0 ? 20 : Math.round((raw[ctx.dataIndex] / total) * 100);
+              const pct =
+                total === 0
+                  ? 20
+                  : Math.round((raw[ctx.dataIndex] / total) * 100);
               return ` ${ctx.label}: ${val} (${pct}%)`;
-            }
-          }
+            },
+          },
         },
         datalabels: {
           color: "#fff",
@@ -721,11 +773,11 @@ function renderCategoryPieChart(categoryCounts) {
             if (total === 0) return "";
             const pct = Math.round((raw[ctx.dataIndex] / total) * 100);
             return pct >= 7 ? pct + "%" : "";
-          }
-        }
-      }
+          },
+        },
+      },
     },
-    plugins: [ChartDataLabels]
+    plugins: [ChartDataLabels],
   });
 }
 
@@ -777,7 +829,7 @@ function connectTriagePreview(textareaSelector, previewSelector) {
       const res = await fetch(`${API_BASE}/triage/preview`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg })
+        body: JSON.stringify({ message: msg }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Triage preview failed");
@@ -804,9 +856,6 @@ function connectTriagePreview(textareaSelector, previewSelector) {
   textarea.addEventListener("input", run);
 }
 
-
-
-
 function connectDefaultDates() {
   // default journey date = today, but allow user to change
   const today = new Date();
@@ -815,16 +864,58 @@ function connectDefaultDates() {
   const dd = String(today.getDate()).padStart(2, "0");
   const iso = `${yyyy}-${mm}-${dd}`;
 
-  qsa("input[name='journeyDate']").forEach(el => {
+  qsa("input[name='journeyDate']").forEach((el) => {
     if (!el.value) el.value = iso;
   });
 }
 
-function init() {
+async function ensureAdminSession() {
+  try {
+    const res = await fetch(`${API_BASE}/auth/me`);
+    if (!res.ok) {
+      location.href = "/admin-login.html";
+      return false;
+    }
+
+    const me = await res.json();
+    if (me.role !== "ADMIN") {
+      location.href =
+        me.role === "CUSTOMER" ? "/customer/" : "/admin-login.html";
+      return false;
+    }
+
+    const userTag = qs("#authUser");
+    if (userTag) {
+      userTag.innerHTML = `<i class="fa-solid fa-user-shield"></i> ${escapeHtml(me.username || "Admin")}`;
+    }
+    return true;
+  } catch {
+    location.href = "/admin-login.html";
+    return false;
+  }
+}
+
+function connectLogout(redirectPath) {
+  const btn = qs("#btnLogout");
+  if (!btn) return;
+  btn.addEventListener("click", async () => {
+    try {
+      await fetch(`${API_BASE}/auth/logout`, { method: "POST" });
+    } finally {
+      location.href = redirectPath;
+    }
+  });
+}
+
+async function init() {
+  const allowed = await ensureAdminSession();
+  if (!allowed) return;
+
   connectTabs();
   connectTrack();
   connectAdmin();
   connectThemeToggle();
+  connectLogout("/admin-login.html");
   trackToggle();
   connectResetButtons();
   connectDefaultDates();
@@ -851,13 +942,12 @@ function init() {
     });
   }
 
-
-
   // Default active tab on refresh (important after removing feedback/complaint panels).
   try {
-    const validTabIds = new Set(qsa(".tab").map(b => b.dataset.tab));
+    const validTabIds = new Set(qsa(".tab").map((b) => b.dataset.tab));
     const storedTab = localStorage.getItem("airline-active-tab");
-    const initialTab = (storedTab && validTabIds.has(storedTab)) ? storedTab : "trackTab";
+    const initialTab =
+      storedTab && validTabIds.has(storedTab) ? storedTab : "trackTab";
     setTab(initialTab);
     if (initialTab === "analyticsTab") loadAnalytics(true);
   } catch {
@@ -880,7 +970,10 @@ function init() {
 
   // Delete actions (Analytics only). Uses event delegation so it works after re-render.
   document.addEventListener("click", async (e) => {
-    const btn = e.target && e.target.closest ? e.target.closest("[data-delete-id]") : null;
+    const btn =
+      e.target && e.target.closest
+        ? e.target.closest("[data-delete-id]")
+        : null;
     if (!btn) return;
 
     const id = btn.dataset.deleteId;
@@ -890,16 +983,21 @@ function init() {
     if (!ok) return;
 
     try {
-      await fetch(`${API_BASE}/cases/${encodeURIComponent(id)}`, { method: "DELETE" });
+      await fetch(`${API_BASE}/cases/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
       toast("Deleted", "Case removed.", "success");
       analyticsLoadedOnce = false;
       loadAnalytics(true);
       loadKpis();
     } catch (err) {
-      toast("Delete failed", (err && err.message) ? err.message : String(err), "error");
+      toast(
+        "Delete failed",
+        err && err.message ? err.message : String(err),
+        "error",
+      );
     }
   });
 }
 
 init();
-

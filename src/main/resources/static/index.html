@@ -1,294 +1,337 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SkyResolve — Case Management</title>
-  <meta name="description" content="Enterprise airline feedback management with real-time analytics and intelligent case resolution." />
+  <meta name="description"
+    content="Enterprise airline feedback management with real-time analytics and intelligent case resolution." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <link rel="stylesheet" href="/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 </head>
+
 <body>
-<!-- Interactive Particle Network -->
-<canvas id="particleCanvas"></canvas>
+  <!-- Interactive Particle Network -->
+  <canvas id="particleCanvas"></canvas>
 
 
-<!-- ═══ Top Bar ═══ -->
-<header class="topbar">
-  <div class="brand">
-    <div class="brand-mark" aria-hidden="true">
-      <i class="fa-solid fa-plane-departure"></i>
-    </div>
-    <div>
-      <div class="brand-title">SkyResolve</div>
-    </div>
-  </div>
-  <div class="topbar-actions">
-    <a class="pill-link" href="/customer/" title="Customer Portal">
-      <i class="fa-solid fa-headset"></i>
-      Customer Portal
-    </a>
-    <a class="pill-link" href="/api/export/excel" title="Download all cases as Excel" id="btnDownloadExcel" style="background:linear-gradient(135deg,#16a34a,#15803d);border-color:#16a34a;">
-      <i class="fa-solid fa-file-excel"></i>
-      Download Excel
-    </a>
-    <button class="pill-btn" id="btnTheme" type="button" title="Toggle theme">
-      <i class="fa-solid fa-moon"></i>
-      Theme
-    </button>
-  </div>
-</header>
-
-<main class="container">
-  <!-- ═══ HERO ═══ -->
-  <section class="panel hero-section reveal">
-    <div class="hero-top">
+  <!-- ═══ Top Bar ═══ -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <i class="fa-solid fa-plane-departure"></i>
+      </div>
       <div>
-        <h1>Resolve cases faster.</h1>
-        <p>
-          <span class="live-dot"></span>
-          Track every case from submission through resolution — in real time.
-        </p>
-      </div>
-      <div class="stats">
-        <div class="stat">
-          <div class="stat-kpi" id="kpiTotal">—</div>
-          <div class="stat-label">Total Cases</div>
-        </div>
-        <div class="stat">
-          <div class="stat-kpi" id="kpiHot">—</div>
-          <div class="stat-label">High Priority</div>
-        </div>
-        <div class="stat">
-          <div class="stat-kpi" id="kpiResolved">—</div>
-          <div class="stat-label">Resolved</div>
-        </div>
+        <div class="brand-title">SkyResolve</div>
       </div>
     </div>
-    <div class="charts-row">
-      <div class="glass card-timeline chart-card">
-        <div class="card-title">
-          <i class="fa-solid fa-chart-pie"></i>
-          Cases by Type
-        </div>
-        <div style="position:relative;width:100%;max-width:220px;margin:0 auto;">
-          <canvas id="caseTypePieChart" width="220" height="220"></canvas>
-        </div>
-        <div class="muted" style="margin-top:14px;text-align:center;font-size:12px;">Feedback vs Complaints</div>
-      </div>
-      <div class="glass card-timeline chart-card">
-        <div class="card-title">
-          <i class="fa-solid fa-tags"></i>
-          Cases by Category
-        </div>
-        <div style="position:relative;width:100%;max-width:220px;margin:0 auto;">
-          <canvas id="caseCategoryPieChart" width="220" height="220"></canvas>
-        </div>
-        <div class="muted" style="margin-top:14px;text-align:center;font-size:12px;">Category breakdown</div>
-      </div>
+    <div class="topbar-actions">
+      <span class="pill-link" id="authUser" style="cursor:default;opacity:.92;">
+        <i class="fa-solid fa-user-shield"></i>
+        Admin
+      </span>
+      <button class="pill-btn" id="btnLogout" type="button" title="Logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        Logout
+      </button>
+      <a class="pill-link" href="/api/export/excel" title="Download all cases as Excel" id="btnDownloadExcel"
+        style="background:linear-gradient(135deg,#16a34a,#15803d);border-color:#16a34a;">
+        <i class="fa-solid fa-file-excel"></i>
+        Download Excel
+      </a>
+      <button class="pill-btn" id="btnTheme" type="button" title="Toggle theme">
+        <i class="fa-solid fa-moon"></i>
+        Theme
+      </button>
     </div>
-  </section>
+  </header>
 
-  <!-- ═══ TABS ═══ -->
-  <section class="panel nav-panel reveal">
-    <nav class="tabs" role="tablist">
-      <button class="tab" data-tab="trackTab" type="button" role="tab">
-        <i class="fa-solid fa-magnifying-glass"></i> Track Case
-      </button>
-      <button class="tab" data-tab="triageTab" type="button" role="tab">
-        <i class="fa-solid fa-wand-magic-sparkles"></i> Triage
-      </button>
-      <button class="tab" data-tab="adminTab" type="button" role="tab">
-        <i class="fa-solid fa-shield-halved"></i> Admin Panel
-      </button>
-      <button class="tab" data-tab="analyticsTab" type="button" role="tab">
-        <i class="fa-solid fa-chart-line"></i> Analytics
-      </button>
-    </nav>
-  </section>
-
-  <!-- ═══ TAB CONTENT ═══ -->
-  <section class="panel reveal">
-    <div id="trackTab" class="tab-panel hidden">
-      <div class="split">
+  <main class="container">
+    <!-- ═══ HERO ═══ -->
+    <section class="panel hero-section reveal">
+      <div class="hero-top">
         <div>
-          <h2><i class="fa-solid fa-location-dot"></i> Track Your Case</h2>
-          <div class="card" style="margin-top:14px;">
-            <div class="radio-row">
-              <label class="radio"><input type="radio" name="trackMode" value="ticket" checked /> Ticket number</label>
-              <label class="radio"><input type="radio" name="trackMode" value="email" /> Email lookup</label>
-            </div>
-            <div id="trackTicketArea">
-              <label>Ticket number</label>
-              <input id="trackTicketNumber" type="text" placeholder="e.g., AIR-20260325-00001" />
-              <button class="btn btn-primary" id="btnLookup" type="button" style="margin-top:12px;">
-                <i class="fa-solid fa-magnifying-glass"></i> Lookup
-              </button>
-            </div>
-            <div id="trackEmailArea" class="hidden">
-              <label>Email address</label>
-              <input id="trackEmail" type="email" placeholder="e.g., john@example.com" />
-              <div class="inline" style="margin-top:12px;">
-                <div><label>Limit</label><input id="trackLimit" type="number" min="1" max="25" value="10" /></div>
-                <div class="align-end">
-                  <button class="btn btn-primary" id="btnLookupEmail" type="button">
-                    <i class="fa-solid fa-list"></i> Load cases
-                  </button>
+          <h1>Resolve cases faster.</h1>
+          <p>
+            <span class="live-dot"></span>
+            Track every case from submission through resolution — in real time.
+          </p>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-kpi" id="kpiTotal">—</div>
+            <div class="stat-label">Total Cases</div>
+          </div>
+          <div class="stat">
+            <div class="stat-kpi" id="kpiHot">—</div>
+            <div class="stat-label">High Priority</div>
+          </div>
+          <div class="stat">
+            <div class="stat-kpi" id="kpiResolved">—</div>
+            <div class="stat-label">Resolved</div>
+          </div>
+        </div>
+      </div>
+      <div class="charts-row">
+        <div class="glass card-timeline chart-card">
+          <div class="card-title">
+            <i class="fa-solid fa-chart-pie"></i>
+            Cases by Type
+          </div>
+          <div style="position:relative;width:100%;max-width:220px;margin:0 auto;">
+            <canvas id="caseTypePieChart" width="220" height="220"></canvas>
+          </div>
+          <div class="muted" style="margin-top:14px;text-align:center;font-size:12px;">Feedback vs Complaints</div>
+        </div>
+        <div class="glass card-timeline chart-card">
+          <div class="card-title">
+            <i class="fa-solid fa-tags"></i>
+            Cases by Category
+          </div>
+          <div style="position:relative;width:100%;max-width:220px;margin:0 auto;">
+            <canvas id="caseCategoryPieChart" width="220" height="220"></canvas>
+          </div>
+          <div class="muted" style="margin-top:14px;text-align:center;font-size:12px;">Category breakdown</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ TABS ═══ -->
+    <section class="panel nav-panel reveal">
+      <nav class="tabs" role="tablist">
+        <button class="tab" data-tab="trackTab" type="button" role="tab">
+          <i class="fa-solid fa-magnifying-glass"></i> Track Case
+        </button>
+        <button class="tab" data-tab="triageTab" type="button" role="tab">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Triage
+        </button>
+        <button class="tab" data-tab="adminTab" type="button" role="tab">
+          <i class="fa-solid fa-shield-halved"></i> Admin Panel
+        </button>
+        <button class="tab" data-tab="analyticsTab" type="button" role="tab">
+          <i class="fa-solid fa-chart-line"></i> Analytics
+        </button>
+      </nav>
+    </section>
+
+    <!-- ═══ TAB CONTENT ═══ -->
+    <section class="panel reveal">
+      <div id="trackTab" class="tab-panel hidden">
+        <div class="split">
+          <div>
+            <h2><i class="fa-solid fa-location-dot"></i> Track Your Case</h2>
+            <div class="card" style="margin-top:14px;">
+              <div class="radio-row">
+                <label class="radio"><input type="radio" name="trackMode" value="ticket" checked /> Ticket
+                  number</label>
+                <label class="radio"><input type="radio" name="trackMode" value="email" /> Email lookup</label>
+              </div>
+              <div id="trackTicketArea">
+                <label>Ticket number</label>
+                <input id="trackTicketNumber" type="text" placeholder="e.g., AIR-20260325-00001" />
+                <button class="btn btn-primary" id="btnLookup" type="button" style="margin-top:12px;">
+                  <i class="fa-solid fa-magnifying-glass"></i> Lookup
+                </button>
+              </div>
+              <div id="trackEmailArea" class="hidden">
+                <label>Email address</label>
+                <input id="trackEmail" type="email" placeholder="e.g., john@example.com" />
+                <div class="inline" style="margin-top:12px;">
+                  <div><label>Limit</label><input id="trackLimit" type="number" min="1" max="25" value="10" /></div>
+                  <div class="align-end">
+                    <button class="btn btn-primary" id="btnLookupEmail" type="button">
+                      <i class="fa-solid fa-list"></i> Load cases
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+            <div class="muted" style="margin-top:12px;">
+              <i class="fa-solid fa-lightbulb" style="color:var(--neon-amber);"></i>
+              Try <code>john@example.com</code> to see demo cases.
+            </div>
           </div>
-          <div class="muted" style="margin-top:12px;">
-            <i class="fa-solid fa-lightbulb" style="color:var(--neon-amber);"></i>
-            Try <code>john@example.com</code> to see demo cases.
-          </div>
-        </div>
-        <div>
-          <h2><i class="fa-solid fa-diagram-project"></i> Case Results</h2>
-          <div id="caseResults" class="results" style="margin-top:14px;"></div>
-          <div class="row spread" style="margin-top:16px;">
-            <button class="btn" id="btnExportCsv" type="button" disabled>
-              <i class="fa-solid fa-file-csv"></i> Export CSV
-            </button>
+          <div>
+            <h2><i class="fa-solid fa-diagram-project"></i> Case Results</h2>
+            <div id="caseResults" class="results" style="margin-top:14px;"></div>
+            <div class="row spread" style="margin-top:16px;">
+              <button class="btn" id="btnExportCsv" type="button" disabled>
+                <i class="fa-solid fa-file-csv"></i> Export CSV
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div id="triageTab" class="tab-panel hidden">
-      <form id="triageForm" class="form-grid">
-        <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Triage Preview</h2>
-        <div class="row span-2">
-          <label>Customer message</label>
-          <textarea name="message" id="triageMessage" rows="5" placeholder="Paste a customer message to preview triage — category, sentiment, priority..."></textarea>
-        </div>
-        <div class="triagePreview span-2" id="mainTriagePreview">
-          <div class="meta"><strong>Triage Engine</strong>: start typing to see real-time analysis.</div>
-        </div>
-      </form>
-    </div>
-
-    <div id="adminTab" class="tab-panel hidden">
-      <form id="adminForm" class="form-grid">
-        <h2><i class="fa-solid fa-shield-halved"></i> Admin: Update Status & Resolution</h2>
-        <div class="row"><label>Ticket number</label><input name="ticketNumber" type="text" placeholder="AIR-YYYYMMDD-00001" required /></div>
-        <div class="row"><label>Assigned agent</label><input name="assignedAgent" type="text" placeholder="e.g., Agent Omar" /></div>
-        <div class="row">
-          <label>New status</label>
-          <select name="status" required>
-            <option value="TRIAGED">TRIAGED</option>
-            <option value="IN_PROGRESS">IN_PROGRESS</option>
-            <option value="RESOLVED" selected>RESOLVED</option>
-          </select>
-        </div>
-        <div class="row span-2"><label>Resolution note</label><textarea name="resolutionText" rows="4" placeholder="Describe the resolution..."></textarea></div>
-        <div class="actions">
-          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-check-double"></i> Apply Update</button>
-        </div>
-      </form>
-      <div class="results" id="adminPreview" style="margin-top:18px;"></div>
-    </div>
-
-    <div id="analyticsTab" class="tab-panel hidden">
-      <h2 style="margin:0 0 16px 0;"><i class="fa-solid fa-chart-bar"></i> Submissions Analytics</h2>
-      <div class="analytics-grid">
-        <div class="stat"><div class="stat-kpi" id="analyticsTotal">—</div><div class="stat-label">Total</div></div>
-        <div class="stat"><div class="stat-kpi" id="analyticsFeedback">—</div><div class="stat-label">Feedback</div></div>
-        <div class="stat"><div class="stat-kpi" id="analyticsComplaints">—</div><div class="stat-label">Complaints</div></div>
-        <div class="stat"><div class="stat-kpi" id="analyticsResolved">—</div><div class="stat-label">Resolved</div></div>
-        <div class="stat"><div class="stat-kpi" id="analyticsOpen">—</div><div class="stat-label">Open</div></div>
-        <div class="stat"><div class="stat-kpi" id="analyticsHigh">—</div><div class="stat-label">High Priority</div></div>
-        <div class="stat span-2"><div class="stat-kpi" id="analyticsLast7">—</div><div class="stat-label">Last 7 Days</div></div>
+      <div id="triageTab" class="tab-panel hidden">
+        <form id="triageForm" class="form-grid">
+          <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Triage Preview</h2>
+          <div class="row span-2">
+            <label>Customer message</label>
+            <textarea name="message" id="triageMessage" rows="5"
+              placeholder="Paste a customer message to preview triage — category, sentiment, priority..."></textarea>
+          </div>
+          <div class="triagePreview span-2" id="mainTriagePreview">
+            <div class="meta"><strong>Triage Engine</strong>: start typing to see real-time analysis.</div>
+          </div>
+        </form>
       </div>
-      <div class="panel" style="margin-top:18px;padding:20px;">
-        <div class="meta" style="margin-bottom:14px;"><strong>Complaints</strong> — newest first</div>
-        <div id="analyticsComplaintsFullList" class="complaints-feed"></div>
-        <details class="glass-details" style="margin-top:16px;">
-          <summary class="glass-summary">
-            <i class="fa-solid fa-chevron-right" style="font-size:10px;margin-right:8px;transition:transform .2s;"></i>
-            Show feedback entries
-          </summary>
-          <div id="analyticsFeedbackFullList" class="complaints-feed" style="margin-top:14px;"></div>
-        </details>
-        <div class="row spread" style="margin-top:18px;">
-          <button class="btn" id="btnRefreshAnalytics" type="button"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
-          <a class="btn" href="/api/export/excel" style="background:linear-gradient(135deg,#16a34a,#15803d);border:1px solid #16a34a;color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:8px;" id="btnDownloadExcel2">
-            <i class="fa-solid fa-file-excel"></i> Download Excel (All Cases)
-          </a>
+
+      <div id="adminTab" class="tab-panel hidden">
+        <form id="adminForm" class="form-grid">
+          <h2><i class="fa-solid fa-shield-halved"></i> Admin: Update Status & Resolution</h2>
+          <div class="row"><label>Ticket number</label><input name="ticketNumber" type="text"
+              placeholder="AIR-YYYYMMDD-00001" required /></div>
+          <div class="row"><label>Assigned agent</label><input name="assignedAgent" type="text"
+              placeholder="e.g., Agent Omar" /></div>
+          <div class="row">
+            <label>New status</label>
+            <select name="status" required>
+              <option value="TRIAGED">TRIAGED</option>
+              <option value="IN_PROGRESS">IN_PROGRESS</option>
+              <option value="RESOLVED" selected>RESOLVED</option>
+            </select>
+          </div>
+          <div class="row span-2"><label>Resolution note</label><textarea name="resolutionText" rows="4"
+              placeholder="Describe the resolution..."></textarea></div>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-check-double"></i> Apply Update</button>
+          </div>
+        </form>
+        <div class="results" id="adminPreview" style="margin-top:18px;"></div>
+      </div>
+
+      <div id="analyticsTab" class="tab-panel hidden">
+        <h2 style="margin:0 0 16px 0;"><i class="fa-solid fa-chart-bar"></i> Submissions Analytics</h2>
+        <div class="analytics-grid">
+          <div class="stat">
+            <div class="stat-kpi" id="analyticsTotal">—</div>
+            <div class="stat-label">Total</div>
+          </div>
+          <div class="stat">
+            <div class="stat-kpi" id="analyticsFeedback">—</div>
+            <div class="stat-label">Feedback</div>
+          </div>
+          <div class="stat">
+            <div class="stat-kpi" id="analyticsComplaints">—</div>
+            <div class="stat-label">Complaints</div>
+          </div>
+          <div class="stat">
+            <div class="stat-kpi" id="analyticsResolved">—</div>
+            <div class="stat-label">Resolved</div>
+          </div>
+          <div class="stat">
+            <div class="stat-kpi" id="analyticsOpen">—</div>
+            <div class="stat-label">Open</div>
+          </div>
+          <div class="stat">
+            <div class="stat-kpi" id="analyticsHigh">—</div>
+            <div class="stat-label">High Priority</div>
+          </div>
+          <div class="stat span-2">
+            <div class="stat-kpi" id="analyticsLast7">—</div>
+            <div class="stat-label">Last 7 Days</div>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:18px;padding:20px;">
+          <div class="meta" style="margin-bottom:14px;"><strong>Complaints</strong> — newest first</div>
+          <div id="analyticsComplaintsFullList" class="complaints-feed"></div>
+          <details class="glass-details" style="margin-top:16px;">
+            <summary class="glass-summary">
+              <i class="fa-solid fa-chevron-right"
+                style="font-size:10px;margin-right:8px;transition:transform .2s;"></i>
+              Show feedback entries
+            </summary>
+            <div id="analyticsFeedbackFullList" class="complaints-feed" style="margin-top:14px;"></div>
+          </details>
+          <div class="row spread" style="margin-top:18px;">
+            <button class="btn" id="btnRefreshAnalytics" type="button"><i class="fa-solid fa-rotate-right"></i>
+              Refresh</button>
+            <a class="btn" href="/api/export/excel"
+              style="background:linear-gradient(135deg,#16a34a,#15803d);border:1px solid #16a34a;color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:8px;"
+              id="btnDownloadExcel2">
+              <i class="fa-solid fa-file-excel"></i> Download Excel (All Cases)
+            </a>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
-  <footer class="footer">
-    <span style="opacity:.5;">SkyResolve</span>&nbsp;·&nbsp;Case Management&nbsp;·&nbsp;<span style="opacity:.4;">2026</span>
-  </footer>
-</main>
+    <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+    <footer class="footer">
+      <span style="opacity:.5;">SkyResolve</span>&nbsp;·&nbsp;Case Management&nbsp;·&nbsp;<span
+        style="opacity:.4;">2026</span>
+    </footer>
+  </main>
 
-<!-- ═══ Particle System + Scroll Reveal ═══ -->
-<script>
-(function(){
-  const c = document.getElementById('particleCanvas');
-  if(!c) return;
-  const ctx = c.getContext('2d');
-  let w, h, pts = [], mouse = {x:-9999, y:-9999};
-  const N = 90, D = 170;
+  <!-- ═══ Particle System + Scroll Reveal ═══ -->
+  <script>
+    (function () {
+      const c = document.getElementById('particleCanvas');
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      let w, h, pts = [], mouse = { x: -9999, y: -9999 };
+      const N = 90, D = 170;
 
-  function resize(){ w = c.width = innerWidth; h = c.height = innerHeight; }
-  function mkPt(){ return { x: Math.random()*w, y: Math.random()*h, vx:(Math.random()-.5)*.4, vy:(Math.random()-.5)*.4, r: Math.random()*2+.6, a: Math.random()*.5+.15 }; }
-  function init(){ resize(); pts = []; for(let i=0;i<N;i++) pts.push(mkPt()); }
+      function resize() { w = c.width = innerWidth; h = c.height = innerHeight; }
+      function mkPt() { return { x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .4, r: Math.random() * 2 + .6, a: Math.random() * .5 + .15 }; }
+      function init() { resize(); pts = []; for (let i = 0; i < N; i++) pts.push(mkPt()); }
 
-  function frame(){
-    ctx.clearRect(0,0,w,h);
-    for(let i=0;i<pts.length;i++){
-      for(let j=i+1;j<pts.length;j++){
-        const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y, d=Math.sqrt(dx*dx+dy*dy);
-        if(d<D){
-          const a=(1-d/D)*.14;
-          ctx.beginPath(); ctx.strokeStyle = `rgba(0,212,255,${a})`; ctx.lineWidth=.6;
-          ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y); ctx.stroke();
+      function frame() {
+        ctx.clearRect(0, 0, w, h);
+        for (let i = 0; i < pts.length; i++) {
+          for (let j = i + 1; j < pts.length; j++) {
+            const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y, d = Math.sqrt(dx * dx + dy * dy);
+            if (d < D) {
+              const a = (1 - d / D) * .14;
+              ctx.beginPath(); ctx.strokeStyle = `rgba(0,212,255,${a})`; ctx.lineWidth = .6;
+              ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke();
+            }
+          }
         }
+        for (const p of pts) {
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(0,212,255,${p.a})`; ctx.fill();
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > w) p.vx *= -1;
+          if (p.y < 0 || p.y > h) p.vy *= -1;
+          const dx = p.x - mouse.x, dy = p.y - mouse.y, dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 140) { p.x += dx * .01; p.y += dy * .01; }
+        }
+        requestAnimationFrame(frame);
       }
-    }
-    for(const p of pts){
-      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle = `rgba(0,212,255,${p.a})`; ctx.fill();
-      p.x+=p.vx; p.y+=p.vy;
-      if(p.x<0||p.x>w) p.vx*=-1;
-      if(p.y<0||p.y>h) p.vy*=-1;
-      const dx=p.x-mouse.x, dy=p.y-mouse.y, dist=Math.sqrt(dx*dx+dy*dy);
-      if(dist<140){ p.x+=dx*.01; p.y+=dy*.01; }
-    }
-    requestAnimationFrame(frame);
-  }
 
-  addEventListener('resize', resize);
-  addEventListener('mousemove', e=>{ mouse.x=e.clientX; mouse.y=e.clientY; });
-  init(); frame();
-})();
+      addEventListener('resize', resize);
+      addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+      init(); frame();
+    })();
 
-// Scroll Reveal
-(function(){
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
-  }, { threshold: 0.06 });
-  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
-})();
+    // Scroll Reveal
+    (function () {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+      }, { threshold: 0.06 });
+      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    })();
 
-// Details chevron
-document.querySelectorAll('details').forEach(d => {
-  d.addEventListener('toggle', () => {
-    const i = d.querySelector('.glass-summary i');
-    if(i) i.style.transform = d.open ? 'rotate(90deg)' : 'rotate(0)';
-  });
-});
-</script>
-<script src="/app.js"></script>
+    // Details chevron
+    document.querySelectorAll('details').forEach(d => {
+      d.addEventListener('toggle', () => {
+        const i = d.querySelector('.glass-summary i');
+        if (i) i.style.transform = d.open ? 'rotate(90deg)' : 'rotate(0)';
+      });
+    });
+  </script>
+  <script src="/app.js"></script>
 </body>
+
 </html>

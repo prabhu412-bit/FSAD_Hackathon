@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SkyResolve Admin Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="/styles.css" />
+</head>
+
+<body>
+    <canvas id="particleCanvas"></canvas>
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-mark" aria-hidden="true">
+                <i class="fa-solid fa-plane-departure"></i>
+            </div>
+            <div>
+                <div class="brand-title">SkyResolve</div>
+                <div class="brand-subtitle">ADMIN PORTAL LOGIN</div>
+            </div>
+        </div>
+        <div class="topbar-actions">
+            <a class="pill-link" href="/customer/login.html">
+                <i class="fa-solid fa-headset"></i>
+                Customer Login
+            </a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="panel reveal" style="max-width:520px;margin:60px auto;padding:28px;">
+            <h2><i class="fa-solid fa-lock"></i> Admin Sign In</h2>
+            <p class="muted" style="margin-top:8px;">Use your admin credentials to access analytics and case management.
+            </p>
+
+            <form id="loginForm" class="form-grid" style="margin-top:14px;">
+                <div class="row span-2">
+                    <label>Username</label>
+                    <input id="username" type="text" autocomplete="username" placeholder="Enter admin username"
+                        required />
+                </div>
+                <div class="row span-2">
+                    <label>Password</label>
+                    <input id="password" type="password" autocomplete="current-password" placeholder="Enter password"
+                        required />
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" id="btnLogin" type="submit">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        Login to Admin Portal
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+    </main>
+
+    <script>
+        (function () {
+            const c = document.getElementById('particleCanvas');
+            if (!c) return;
+            const ctx = c.getContext('2d');
+            let w, h, pts = [];
+            const N = 70, D = 160;
+            function resize() { w = c.width = innerWidth; h = c.height = innerHeight; }
+            function mkPt() { return { x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .4, r: Math.random() * 2 + .5, a: Math.random() * .45 + .12 }; }
+            function init() { resize(); pts = []; for (let i = 0; i < N; i++) pts.push(mkPt()); }
+            function frame() {
+                ctx.clearRect(0, 0, w, h);
+                for (let i = 0; i < pts.length; i++) {
+                    for (let j = i + 1; j < pts.length; j++) {
+                        const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y, d = Math.sqrt(dx * dx + dy * dy);
+                        if (d < D) {
+                            const a = (1 - d / D) * .13;
+                            ctx.beginPath(); ctx.strokeStyle = `rgba(0,212,255,${a})`; ctx.lineWidth = .6;
+                            ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke();
+                        }
+                    }
+                }
+                for (const p of pts) {
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(0,212,255,${p.a})`; ctx.fill();
+                    p.x += p.vx; p.y += p.vy;
+                    if (p.x < 0 || p.x > w) p.vx *= -1;
+                    if (p.y < 0 || p.y > h) p.vy *= -1;
+                }
+                requestAnimationFrame(frame);
+            }
+            addEventListener('resize', resize);
+            init(); frame();
+        })();
+
+        function qs(sel) { return document.querySelector(sel); }
+
+        function toast(title, message, kind = 'info') {
+            const container = qs('#toastContainer');
+            const el = document.createElement('div');
+            el.className = 'toast';
+            el.innerHTML = `<div class="t-title">${title}</div><div class="t-msg">${message || ''}</div>`;
+            if (kind === 'error') el.style.borderColor = 'rgba(251,113,133,.55)';
+            if (kind === 'success') el.style.borderColor = 'rgba(52,211,153,.45)';
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 3200);
+        }
+
+        function setLoading(btn, isLoading) {
+            if (!btn) return;
+            btn.disabled = isLoading;
+            const icon = btn.querySelector('i');
+            if (isLoading && icon) icon.className = 'fa-solid fa-spinner fa-spin';
+            if (!isLoading && icon) icon.className = 'fa-solid fa-right-to-bracket';
+        }
+
+        async function ensureAnonymous() {
+            try {
+                const res = await fetch('/api/auth/me');
+                if (!res.ok) return;
+                const me = await res.json();
+                if (me.role === 'ADMIN') {
+                    location.href = '/';
+                    return;
+                }
+                if (me.role === 'CUSTOMER') {
+                    location.href = '/customer/';
+                }
+            } catch {
+                // ignore
+            }
+        }
+
+        qs('#loginForm').addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            const btn = qs('#btnLogin');
+            setLoading(btn, true);
+
+            try {
+                const payload = {
+                    username: qs('#username').value.trim(),
+                    password: qs('#password').value,
+                    portal: 'ADMIN'
+                };
+
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.message || 'Login failed');
+                }
+
+                toast('Welcome back', 'Login successful.', 'success');
+                setTimeout(() => {
+                    location.href = data.redirectPath || '/';
+                }, 350);
+            } catch (e) {
+                toast('Login failed', e.message || String(e), 'error');
+            } finally {
+                setLoading(btn, false);
+            }
+        });
+
+        ensureAnonymous();
+    </script>
+</body>
+
+</html>
