@@ -15,8 +15,8 @@ mvn spring-boot:run
 ```
 
 Open:
-- Dashboard: http://localhost:8080
-- Customer Portal: http://localhost:8080/customer
+- Dashboard: https://bit.ly/Casesolver
+- Customer Portal: https://bit.ly/skyResolver
 
 ## Demo data
 
