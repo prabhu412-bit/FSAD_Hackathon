@@ -13,17 +13,13 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/styles.css?v=20260327-1" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <script
     src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 </head>
 
 <body>
-  <!-- Interactive Particle Network -->
-  <canvas id="particleCanvas"></canvas>
-
-
   <!-- ═══ Top Bar ═══ -->
   <header class="topbar">
     <div class="brand">
@@ -44,7 +40,7 @@
         Logout
       </button>
       <a class="pill-link" href="/api/export/excel" title="Download all cases as Excel" id="btnDownloadExcel"
-        style="background:linear-gradient(135deg,#16a34a,#15803d);border-color:#16a34a;">
+        style="background:#ffffff;border-color:#d1d5db;">
         <i class="fa-solid fa-file-excel"></i>
         Download Excel
       </a>
@@ -257,7 +253,7 @@
             <button class="btn" id="btnRefreshAnalytics" type="button"><i class="fa-solid fa-rotate-right"></i>
               Refresh</button>
             <a class="btn" href="/api/export/excel"
-              style="background:linear-gradient(135deg,#16a34a,#15803d);border:1px solid #16a34a;color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:8px;"
+              style="background:#ffffff;border:1px solid #d1d5db;color:#1f2937;text-decoration:none;display:inline-flex;align-items:center;gap:8px;"
               id="btnDownloadExcel2">
               <i class="fa-solid fa-file-excel"></i> Download Excel (All Cases)
             </a>

@@ -578,15 +578,28 @@ function connectAdmin() {
 
 function connectThemeToggle() {
   const btn = qs("#btnTheme");
+  if (!btn) return;
+
   const icon = btn.querySelector("i");
   const stored = localStorage.getItem("airline-theme");
-  if (stored === "light") document.body.classList.add("light");
+  const mode = stored === "light" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", mode);
+  document.body.classList.toggle("light", mode === "light");
+  if (icon) {
+    icon.className = mode === "light" ? "fa-solid fa-sun" : "fa-solid fa-moon";
+  }
 
   btn.addEventListener("click", () => {
-    document.body.classList.toggle("light");
-    const isLight = document.body.classList.contains("light");
-    localStorage.setItem("airline-theme", isLight ? "light" : "dark");
-    icon.className = isLight ? "fa-solid fa-moon" : "fa-solid fa-sun";
+    const current =
+      document.documentElement.getAttribute("data-theme") || "dark";
+    const next = current === "light" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", next);
+    document.body.classList.toggle("light", next === "light");
+    localStorage.setItem("airline-theme", next);
+    if (icon) {
+      icon.className =
+        next === "light" ? "fa-solid fa-sun" : "fa-solid fa-moon";
+    }
   });
 }
 
