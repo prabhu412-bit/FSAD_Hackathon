@@ -1,0 +1,12 @@
+<svg width="1200" height="700" viewBox="0 0 1200 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="700" rx="24" fill="#0A0F1A"/>
+  <rect x="30" y="30" width="1140" height="70" rx="12" fill="#101827"/>
+  <rect x="30" y="124" width="1140" height="170" rx="16" fill="#101827"/>
+  <rect x="30" y="318" width="1140" height="352" rx="16" fill="#101827"/>
+  <rect x="64" y="354" width="240" height="54" rx="10" fill="#1F2937"/>
+  <rect x="320" y="354" width="240" height="54" rx="10" fill="#1F2937"/>
+  <rect x="576" y="354" width="240" height="54" rx="10" fill="#1F2937"/>
+  <rect x="64" y="438" width="1040" height="204" rx="12" fill="#0F172A"/>
+  <text x="64" y="184" fill="#E5E7EB" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="700">Customer Portal</text>
+  <text x="64" y="226" fill="#9CA3AF" font-family="Inter, Arial, sans-serif" font-size="20">Submit complaints, track ticket progress, and view full complaint history</text>
+</svg>
