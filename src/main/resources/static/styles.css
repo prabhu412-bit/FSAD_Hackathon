@@ -85,40 +85,9 @@ body {
   pointer-events: none;
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -9;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(0, 212, 255, 0.20), transparent),
-    radial-gradient(ellipse 60% 40% at 80% 0%, rgba(168, 85, 247, 0.18), transparent),
-    radial-gradient(ellipse 50% 30% at 50% 100%, rgba(236, 72, 153, 0.12), transparent),
-    radial-gradient(ellipse 40% 30% at 10% 60%, rgba(99, 102, 241, 0.10), transparent);
-  animation: auroraShift 12s ease-in-out infinite alternate;
-}
 
-.bg-orb {
-  position: fixed;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: -8;
-}
-.orb-1 {
-  width: 600px; height: 600px;
-  top: -200px; left: -100px;
-  background: radial-gradient(circle, rgba(0, 212, 255, 0.25), transparent 70%);
-  filter: blur(80px);
-  animation: orbDrift 18s ease-in-out infinite;
-}
-.orb-2 {
-  width: 500px; height: 500px;
-  bottom: -150px; right: -100px;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.22), transparent 70%);
-  filter: blur(80px);
-  animation: orbDrift 22s ease-in-out infinite reverse;
-}
+
+
 
 /* ─── Layout ─── */
 .container {
