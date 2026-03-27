@@ -5,4 +5,4 @@ data/
 .idea/
 .vscode/
 *.iml
-
+.env
