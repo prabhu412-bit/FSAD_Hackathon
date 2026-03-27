@@ -1,0 +1,11 @@
+target/
+data/
+.DS_Store
+*.log
+.idea/
+.vscode/
+*.iml
+.git/
+.gitignore
+Dockerfile
+render.yaml
